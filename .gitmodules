@@ -1,0 +1,3 @@
+[submodule "shared_sources"]
+	path = shared_sources
+	url = https://github.com/nvpro-samples/shared_sources.git

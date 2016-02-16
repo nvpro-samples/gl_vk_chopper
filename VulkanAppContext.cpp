@@ -314,9 +314,7 @@ void VulkanAppContext::initAppContext(){
 	/*
 		Set up the application create info.
 	*/
-	VkApplicationInfo appInfo;
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pNext = NULL;
+	VkApplicationInfo appInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
 	appInfo.pApplicationName = "gl_vk_chopper";
 	appInfo.applicationVersion = 1;
 	appInfo.pEngineName = "gl_vk_chopper";
@@ -325,9 +323,7 @@ void VulkanAppContext::initAppContext(){
 	/*
 		Set up the instance create info.
 	*/
-	VkInstanceCreateInfo createInfo;
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pNext = NULL;
+	VkInstanceCreateInfo createInfo = {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
 	createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledLayerCount = 0;
 	createInfo.ppEnabledLayerNames = NULL;

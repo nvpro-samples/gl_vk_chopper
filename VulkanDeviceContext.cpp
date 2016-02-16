@@ -310,13 +310,12 @@ void VulkanDC::Device::initDevice(){
 	}
 
 	float priorities = { 1.0f };
-	VkDeviceQueueCreateInfo queueInfo;
+	VkDeviceQueueCreateInfo queueInfo = {};
 	queueInfo.queueCount = m_queue_count;
 	queueInfo.queueFamilyIndex = 0;
 	queueInfo.pQueuePriorities = &priorities;
-
+	
 	m_extension_count = 0;
-	//m_extension_names = NULL;
 
     deviceCreate(&m_device, &m_physical_device, m_queue_count, &queueInfo, m_extension_count, m_extension_names);
 

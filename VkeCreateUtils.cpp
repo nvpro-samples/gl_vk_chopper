@@ -455,7 +455,7 @@ void depthStateInfo(
     outInfo->front.reference = 0;
 	outInfo->back.reference = 0;
     outInfo->front.compareMask = 0xff;
-	outInfo->back.reference = 0xff;
+	outInfo->back.compareMask = 0xff;
     outInfo->front.writeMask = 0xff;
 	outInfo->back.writeMask = 0xff;
 

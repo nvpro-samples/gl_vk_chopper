@@ -221,16 +221,14 @@ void VkeCubeTexture::loadCubeDDS(const char *inFile){
 	}
 
 
-	VkSamplerCreateInfo sampler;
+	VkSamplerCreateInfo sampler = {VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
 
-	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	sampler.pNext = NULL;
 	sampler.magFilter = VK_FILTER_NEAREST;
 	sampler.minFilter = VK_FILTER_NEAREST;
 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeW= VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler.mipLodBias = 0.0f;
 	sampler.maxAnisotropy = 1;
 	sampler.compareOp = VK_COMPARE_OP_NEVER;
@@ -239,9 +237,7 @@ void VkeCubeTexture::loadCubeDDS(const char *inFile){
 
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
-	VkImageViewCreateInfo view;
-	view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	view.pNext = NULL;
+	VkImageViewCreateInfo view = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
 	view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 	view.format = m_format;
 	view.components.r = VK_COMPONENT_SWIZZLE_R;

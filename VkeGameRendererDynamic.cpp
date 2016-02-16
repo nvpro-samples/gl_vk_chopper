@@ -1315,11 +1315,23 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 	vkCmdEndRenderPass(m_primary_commands[m_current_buffer_index]);
 
 	VkImageResolve blitInfo;
-	blitInfo.srcOffset = { 0, 0, 0 };
-	blitInfo.dstOffset = { 0, 0, 0 };
-	blitInfo.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-	blitInfo.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-	blitInfo.extent = { m_width, m_height, 1 };
+	blitInfo.srcOffset.x = 0;
+	blitInfo.srcOffset.y = 0;
+	blitInfo.srcOffset.z = 0;
+	blitInfo.dstOffset.x = 0;
+	blitInfo.dstOffset.y = 0;
+	blitInfo.dstOffset.z = 0;
+    blitInfo.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitInfo.srcSubresource.mipLevel = 0;
+    blitInfo.srcSubresource.baseArrayLayer = 0;
+    blitInfo.srcSubresource.layerCount = 1;
+    blitInfo.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitInfo.dstSubresource.mipLevel = 0;
+    blitInfo.dstSubresource.baseArrayLayer = 0;
+    blitInfo.dstSubresource.layerCount = 1;
+    blitInfo.extent.width = m_width;
+    blitInfo.extent.height = m_height;
+    blitInfo.extent.depth = 1;
 
 
 	vkCmdResolveImage(

@@ -216,6 +216,7 @@ protected:
 
 	VkCommandPool					m_primary_buffer_cmd_pool;
 	VkCommandBuffer					m_primary_commands[2];
+	VkCommandBuffer					m_update_commands[2];
 
 	FlightPath						*m_test_fp;
 	FlightPath						**m_flight_paths;

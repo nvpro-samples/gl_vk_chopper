@@ -329,6 +329,8 @@ void vkeGameRendererDynamic::initRenderer(){
 	m_terrain_command[1] = VK_NULL_HANDLE;
 	m_framebuffers[0] = VK_NULL_HANDLE;
 	m_framebuffers[1] = VK_NULL_HANDLE;
+	m_update_commands[0] = VK_NULL_HANDLE;
+	m_update_commands[1] = VK_NULL_HANDLE;
 
 	m_is_first_frame = true;
 
@@ -396,6 +398,7 @@ void vkeGameRendererDynamic::initRenderer(){
 
 
 	VKA_CHECK_ERROR(vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, m_primary_commands), "Could not allocate primary command buffers.\n");
+	VKA_CHECK_ERROR(vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, m_update_commands), "Could not allocate primary command buffers.\n");
 
 	m_current_buffer_index = 0;
 
@@ -514,6 +517,8 @@ void vkeGameRendererDynamic::update(){
 	vkFlushMappedMemoryRanges(device->getVKDevice(), 1, &memRange);
 
 
+
+
 	vkUnmapMemory(device->getVKDevice(), m_uniforms_staging);
 
 	if (!m_is_first_frame){
@@ -523,7 +528,12 @@ void vkeGameRendererDynamic::update(){
 		memset(&subInfo, 0, sizeof(subInfo));
 		subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		subInfo.commandBufferCount = 1;
-		subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
+		subInfo.pCommandBuffers = &m_update_commands[m_current_buffer_index];
+
+		vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(dc->getDefaultQueue()->getVKQueue());
+
+
 
 #if defined(WIN32)
 		subInfo.waitSemaphoreCount = 1;
@@ -531,7 +541,9 @@ void vkeGameRendererDynamic::update(){
 		subInfo.signalSemaphoreCount = 0;
 		subInfo.pSignalSemaphores = &m_render_done;
 #endif
-		vkQueueWaitIdle(dc->getDefaultQueue()->getVKQueue());
+
+		subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
+
 		vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
 	}
 	else{
@@ -1223,10 +1235,11 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 	VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
 	cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	vkResetCommandBuffer(m_primary_commands[m_current_buffer_index], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+	vkResetCommandBuffer(m_primary_commands[m_current_buffer_index], 0);
+	vkResetCommandBuffer(m_update_commands[m_current_buffer_index], 0);
 
 
-	VKA_CHECK_ERROR(vkBeginCommandBuffer(m_primary_commands[m_current_buffer_index],&cmdBeginInfo), "Could not begin primary command buffer.\n");
+	VKA_CHECK_ERROR(vkBeginCommandBuffer(m_update_commands[m_current_buffer_index],&cmdBeginInfo), "Could not begin primary command buffer.\n");
 
 	VkBufferMemoryBarrier bufBarrier = { VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER };
 	bufBarrier.dstAccessMask = VK_ACCESS_UNIFORM_READ_BIT;
@@ -1246,12 +1259,12 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 	bufCopy.srcOffset = 0;
 	bufCopy.size = sz;
 
-	vkCmdCopyBuffer(m_primary_commands[m_current_buffer_index], m_uniforms_buffer_staging, m_uniforms_buffer, 1, &bufCopy);
-	
+	vkCmdCopyBuffer(m_update_commands[m_current_buffer_index], m_uniforms_buffer_staging, m_uniforms_buffer, 1, &bufCopy);
+
 	vkCmdPipelineBarrier(
-		m_primary_commands[m_current_buffer_index],
+		m_update_commands[m_current_buffer_index],
 		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT  ,
+		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
 		0,
 		0,
 		NULL,
@@ -1259,6 +1272,11 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 		&bufBarrier,
 		0,
 		NULL);
+
+	VKA_CHECK_ERROR(vkEndCommandBuffer(m_update_commands[m_current_buffer_index]), "Could not end command buffer for draw command.\n");
+
+
+	VKA_CHECK_ERROR(vkBeginCommandBuffer(m_primary_commands[m_current_buffer_index], &cmdBeginInfo), "Could not begin primary command buffer.\n");
 
 
 

@@ -42,7 +42,6 @@ endif(SUPPORT_NVTOOLSEXT)
 #
 
 _add_package_VulkanSDK()
-_add_package_NSight()
 _add_package_AntTweakBar()
 
 #####################################################################################

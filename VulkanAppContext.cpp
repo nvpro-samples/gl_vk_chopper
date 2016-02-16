@@ -317,9 +317,9 @@ void VulkanAppContext::initAppContext(){
 	VkApplicationInfo appInfo;
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pNext = NULL;
-	appInfo.pApplicationName = "Vulkan Context App\0";
+	appInfo.pApplicationName = "gl_vk_chopper";
 	appInfo.applicationVersion = 1;
-	appInfo.pEngineName = "Chris's Engine\0";
+	appInfo.pEngineName = "gl_vk_chopper";
 	appInfo.engineVersion = 1;
 	appInfo.apiVersion = VK_API_VERSION;
 	/*

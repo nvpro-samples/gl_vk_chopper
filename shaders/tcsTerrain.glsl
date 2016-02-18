@@ -54,7 +54,7 @@ void main(){
 
 
 	if (gl_InvocationID == 0){
-		float tf = 16;
+		float tf = 16.0;
 		gl_TessLevelOuter[0] = tf;
 		gl_TessLevelOuter[1] = tf;
 		gl_TessLevelOuter[2] = tf;

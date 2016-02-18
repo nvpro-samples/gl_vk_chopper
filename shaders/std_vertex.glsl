@@ -51,7 +51,7 @@ layout(std140,set=0, binding = 1) uniform cameraBuffer{
 };
 
 layout(std140, set=2, binding = 0) uniform transformBuffer{
-	InstanceData instdata[128];
+	InstanceData instdata[384];
 }tra;
 
 in layout(location = 0) vec4 pos;

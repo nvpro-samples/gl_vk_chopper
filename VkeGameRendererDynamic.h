@@ -236,9 +236,9 @@ protected:
 	VkCommandBuffer					m_scene_command[2];
 	VkCommandBuffer					m_terrain_command[2];
 
-	VkSemaphore						m_present_done;
-	VkSemaphore						m_update_done;
-	VkSemaphore						m_render_done;
+	VkSemaphore						m_present_done[2];
+	VkSemaphore						m_render_done[2];
+	VkFence							m_update_fence[2];
 
 
 	/*
@@ -249,11 +249,7 @@ protected:
 	VkDescriptorBufferInfo			m_transforms_descriptor;
 	/**/
 
-	/*
-		vkeDrawCall Test
-	*/
-	VkeDrawCall						*m_test_drawcall;
-	/**/
+
 
 	VkeDrawCall						**m_draw_calls;
 
@@ -285,6 +281,8 @@ protected:
 	
 
 	VkDescriptorBufferInfo			m_uniforms_descriptor;
+
+	float							*m_uniforms_local;
 
 	VkBuffer						m_material_buffer_staging;
 	VkDeviceMemory					m_material_staging;

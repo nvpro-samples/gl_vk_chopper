@@ -118,7 +118,7 @@ void VkeNodeData::updateFromNode(Node * const inNode, VkCommandBuffer *inBuffer)
 
 }
 
-void VkeNodeData::updateFromNode(Node * const inNode, VkeNodeUniform *inData){
+void VkeNodeData::updateFromNode(Node * const inNode, VkeNodeUniform *inData, uint32_t inInstanceCount){
 
 	m_node = inNode;
 
@@ -128,7 +128,7 @@ void VkeNodeData::updateFromNode(Node * const inNode, VkeNodeUniform *inData){
 	m_backing_store->view_matrix = transform.getTransform();
 	m_backing_store->normal_matrix = transform.getInverse();
 	m_backing_store->lookup.x = m_mesh->getMaterialID();
-	m_backing_store->lookup.y = 64;
+	m_backing_store->lookup.y = inInstanceCount;
 
 	updateVKBufferData(inData);
 }
@@ -139,8 +139,8 @@ void VkeNodeData::updateConstantVKBufferData(VkCommandBuffer *inBuffer){
 
 }
 
-void VkeNodeData::updateFromNode(VkeNodeUniform *inData){
-	updateFromNode(m_node, inData);
+void VkeNodeData::updateFromNode(VkeNodeUniform *inData, uint32_t inInstanceCount){
+	updateFromNode(m_node, inData, inInstanceCount);
 }
 
 void VkeNodeData::updateFromNode(){
@@ -196,12 +196,12 @@ void VkeNodeData::List::update(){
 	}
 }
 
-void VkeNodeData::List::update(VkeNodeUniform *inData){
+void VkeNodeData::List::update(VkeNodeUniform *inData, uint32_t inInstanceCount){
 	VkeNodeData::Map::iterator itr;
 
 		uint32_t sz = m_data.size();
 		for (uint32_t i = 0; i < sz; ++i){
-			m_data[i]->updateFromNode(inData);
+			m_data[i]->updateFromNode(inData, inInstanceCount);
 		}
 }
 

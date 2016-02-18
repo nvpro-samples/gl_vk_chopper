@@ -62,7 +62,7 @@ public:
 		void addData(VkeNodeData * const inData);
 		VkeNodeData *getData(const ID &inID);
 		void update();
-		void update(VkeNodeUniform *inData);
+		void update(VkeNodeUniform *inData, uint32_t inInstanceCount = 1);
 
 		ID nextID();
 		Count count();
@@ -99,8 +99,8 @@ public:
 	void updateFromNode();
 	void updateFromNode(Node * const inNode, VkCommandBuffer *inBuffer = NULL);
 	void updateFromNode(VkCommandBuffer *inBuffer);
-	void updateFromNode(Node *const inNode, VkeNodeUniform *inData);
-	void updateFromNode(VkeNodeUniform *inData);
+	void updateFromNode(Node *const inNode, VkeNodeUniform *inData, uint32_t inInstanceCount = 1);
+	void updateFromNode(VkeNodeUniform *inData, uint32_t inInstanceCount = 1);
 	void updateConstantVKBufferData(VkCommandBuffer *inBuffer = NULL);
 
 	void updateVKBufferData(VkeNodeUniform *inData);

@@ -96,7 +96,7 @@ struct FlightPath{
 		m_position = (m_range * m_t) + m_start_position;
 		m_direction = nv_math::normalize(m_range);
 
-		float yRot = atan2(-m_range.x, -m_range.y);
+		float yRot = atan2(m_range.x, m_range.y);
 
 		nv_math::mat4f rotMat;
 		rotMat.identity();
@@ -237,6 +237,7 @@ protected:
 	VkCommandBuffer					m_terrain_command[2];
 
 	VkSemaphore						m_present_done;
+	VkSemaphore						m_update_done;
 	VkSemaphore						m_render_done;
 
 

@@ -43,7 +43,7 @@ struct CameraData{
 
 layout(std140, set=0, binding = 2) uniform sceneBuffer{
 	//Scene data for each draw.
-	SceneData scene[100];
+	SceneData scene[32];
 }scn;
 
 layout(std140,set=0, binding = 1) uniform cameraBuffer{
@@ -51,7 +51,7 @@ layout(std140,set=0, binding = 1) uniform cameraBuffer{
 };
 
 layout(std140, set=2, binding = 0) uniform transformBuffer{
-	InstanceData instdata[64];
+	InstanceData instdata[128];
 }tra;
 
 in layout(location = 0) vec4 pos;

@@ -211,7 +211,6 @@ vkeGameRendererDynamic::~vkeGameRendererDynamic()
 void vkeGameRendererDynamic::initIndirectCommands(){
 
 	if (!m_node_data) return;
-	m_instance_count = 64;
 
 	VulkanDC *dc = VulkanDC::Get();
 	VulkanDC::Device *device = dc->getDefaultDevice();
@@ -313,6 +312,8 @@ void vkeGameRendererDynamic::initRenderer(){
 	VulkanDC *dc = VulkanDC::Get();
 	VulkanDC::Device *device = dc->getDevice();
 
+	m_instance_count = 64;
+
 	glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glWaitVkSemaphoreNV");
 	glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glSignalVkSemaphoreNV");
 	glSignalVkFenceNV = (PFNGLSIGNALVKFENCENVPROC)NVPWindow::sysGetProcAddress("glSignalVkFenceNV");
@@ -322,7 +323,7 @@ void vkeGameRendererDynamic::initRenderer(){
 
 	VKA_CHECK_ERROR(vkCreateSemaphore(device->getVKDevice(), &semInfo, NULL, &m_present_done), "Could not create present done semaphore.\n");
 	VKA_CHECK_ERROR(vkCreateSemaphore(device->getVKDevice(), &semInfo, NULL, &m_render_done), "Could not create render done semaphore.\n");
-
+	VKA_CHECK_ERROR(vkCreateSemaphore(device->getVKDevice(), &semInfo, NULL, &m_update_done), "Could not create render done semaphore.\n");
 
 
 	m_terrain_command[0] = VK_NULL_HANDLE;
@@ -351,18 +352,14 @@ void vkeGameRendererDynamic::initRenderer(){
 	m_screen_quad.initQuadData();
 	m_terrain_quad.initQuadData();
 
-
 	m_textures.newTexture(0)->setFormat(VK_FORMAT_R32G32B32_SFLOAT);
 	m_textures.getTexture(0)->loadTextureFloatData((float *)&(table[0][0].x), 128, 128, 3);
 	m_test_drawcall = new VkeDrawCall(this);
 
 
+	m_flight_paths = (FlightPath**)malloc(sizeof(FlightPath*) * m_instance_count);
 
-	//m_test_fp = new FlightPath(initPos,endPos);
-
-	m_flight_paths = (FlightPath**)malloc(sizeof(FlightPath*) * 64);
-
-	for (uint32_t i = 0; i < 64; ++i){
+	for (uint32_t i = 0; i < m_instance_count; ++i){
 
 		nv_math::vec2f initPos(quickRandomUVD()*100.0, -200 + (quickRandomUVD() * 20));
 		nv_math::vec2f endPos(quickRandomUVD()*100.0, 200 + (quickRandomUVD() * 20));
@@ -410,15 +407,15 @@ void vkeGameRendererDynamic::setNodeData(VkeNodeData::List *inData){
 	if (m_node_data != NULL){
 
 		uint32_t cnt = m_node_data->count();
-		uint32_t transformsSize = 64 * 64;
+		uint32_t transformsSize = 64 * m_instance_count;
 
-		uint32_t sz = sizeof(VkeNodeUniform) * 100;
+		uint32_t sz = sizeof(VkeNodeUniform) * cnt;
 		sz += (transformsSize);
 
 		VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 		bufferCreate(&m_uniforms_buffer_staging, sz, (VkBufferUsageFlagBits)usageFlags);
-		bufferAlloc(&m_uniforms_buffer_staging, &m_uniforms_staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		bufferAlloc(&m_uniforms_buffer_staging, &m_uniforms_staging, VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
 
 		bufferCreate(&m_uniforms_buffer, sz, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 		bufferAlloc(&m_uniforms_buffer, &m_uniforms_memory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -426,10 +423,10 @@ void vkeGameRendererDynamic::setNodeData(VkeNodeData::List *inData){
 
 		m_uniforms_descriptor.buffer = m_uniforms_buffer;
 		m_uniforms_descriptor.offset = 0;
-		m_uniforms_descriptor.range = sizeof(VkeNodeUniform) * 100;
+		m_uniforms_descriptor.range = sizeof(VkeNodeUniform) * cnt;
 
 		m_transforms_descriptor.buffer = m_uniforms_buffer;
-		m_transforms_descriptor.offset = sizeof(VkeNodeUniform) * 100;
+		m_transforms_descriptor.offset = sizeof(VkeNodeUniform) * cnt;
 		m_transforms_descriptor.range = transformsSize; //(4 * 64);
 	}
 }
@@ -445,7 +442,7 @@ void vkeGameRendererDynamic::setMaterialData(VkeMaterial::List *inData){
 		VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 		bufferCreate(&m_material_buffer_staging, sz, (VkBufferUsageFlagBits)usageFlags);
-		bufferAlloc(&m_material_buffer_staging, &m_material_staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		bufferAlloc(&m_material_buffer_staging, &m_material_staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
 
 		VkeMaterialUniform *uniforms = NULL;
 
@@ -480,8 +477,8 @@ void vkeGameRendererDynamic::update(){
 
 	static uint32_t *uniforms = NULL;
 
-	uint32_t sz = (sizeof(VkeNodeUniform) * 100) + (64 * 64);
-
+	uint32_t cnt = m_node_data->count();
+	uint32_t sz = (sizeof(VkeNodeUniform) * cnt) + (64 * 64);
 	static bool ismapped(false);
 
 	nv_math::mat4f tempMatrix;
@@ -489,22 +486,22 @@ void vkeGameRendererDynamic::update(){
 	static float xTheta(0.0f);
 
 
-	//if (!ismapped){
-	VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), m_uniforms_staging, 0, sz, 0, (void **)&uniforms), "Could not map buffer memory.\n");
-	//ismapped = true;
-	//}
+	if (!ismapped){
+		VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), m_uniforms_staging, 0, sz, 0, (void **)&uniforms), "Could not map buffer memory.\n");
+		ismapped = true;
+	}
 
 
-	for (uint32_t i = 0; i < 64; ++i){
+	for (uint32_t i = 0; i < m_instance_count; ++i){
 
-		size_t pointerOffset = (sizeof(VkeNodeUniform) * 100) + (64 * i);
+		size_t pointerOffset = (sizeof(VkeNodeUniform) * cnt) + (64 * i);
 		nv_math::mat4f *matPtr = (nv_math::mat4f*)(((uint8_t*)uniforms) + pointerOffset);
 
 		m_flight_paths[i]->update(matPtr, sTime);
 
 	}
 
-	m_node_data->update((VkeNodeUniform*)uniforms);
+	m_node_data->update((VkeNodeUniform*)uniforms,m_instance_count);
 
 	m_camera->setViewport(0, 0, (float)m_width, (float)m_height);
 	m_camera->update();
@@ -514,37 +511,43 @@ void vkeGameRendererDynamic::update(){
 	memRange.offset = 0;
 	memRange.size = sz;
 
-	vkFlushMappedMemoryRanges(device->getVKDevice(), 1, &memRange);
+	//vkUnmapMemory(device->getVKDevice(), m_uniforms_staging);
 
+	//glSignalVkSemaphoreNV((GLuint64)m_update_done);
+	
 
-
-
-	vkUnmapMemory(device->getVKDevice(), m_uniforms_staging);
 
 	if (!m_is_first_frame){
+		VkSubmitInfo subInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+		{
 
-		VkSubmitInfo subInfo;
+			const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			subInfo.commandBufferCount = 1;
+			subInfo.pCommandBuffers = &m_update_commands[m_current_buffer_index];
+			//subInfo.waitSemaphoreCount = 1;
+			//subInfo.pWaitSemaphores = &m_update_done;
+			//subInfo.pWaitDstStageMask = &waitStages;
+			vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
+			vkQueueWaitIdle(dc->getDefaultQueue()->getVKQueue());
+		}
 
-		memset(&subInfo, 0, sizeof(subInfo));
-		subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		subInfo.commandBufferCount = 1;
-		subInfo.pCommandBuffers = &m_update_commands[m_current_buffer_index];
-
-		vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(dc->getDefaultQueue()->getVKQueue());
-
-
-
+		{
 #if defined(WIN32)
-		subInfo.waitSemaphoreCount = 1;
-		subInfo.pWaitSemaphores = &m_present_done;
-		subInfo.signalSemaphoreCount = 0;
-		subInfo.pSignalSemaphores = &m_render_done;
+	
+			const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			VkSemaphore semaphores[] = { m_present_done };
+			/*subInfo.waitSemaphoreCount = 1;
+			subInfo.pWaitSemaphores = &m_present_done;
+			subInfo.pWaitDstStageMask = &waitStages;
+			subInfo.signalSemaphoreCount = 1;
+			subInfo.pSignalSemaphores = &m_render_done;*/
+		
 #endif
 
-		subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
+			subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
 
-		vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
+			vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, VK_NULL_HANDLE);
+		}
 	}
 	else{
 		m_is_first_frame = false;
@@ -558,10 +561,32 @@ void vkeGameRendererDynamic::update(){
 
 	generateDrawCommands();
 
-
-
-
 }
+
+
+
+void vkeGameRendererDynamic::present(){
+	VulkanDC *dc = VulkanDC::Get();
+	VulkanDC::Device  *device = dc->getDefaultDevice();
+	VulkanDC::Device::Queue *queue = dc->getDefaultQueue();
+
+
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+
+#if defined(WIN32)
+	//glWaitVkSemaphoreNV((GLuint64)m_render_done);
+#endif
+	glDrawVkImageNV((GLuint64)m_resolve_attachment[m_current_buffer_index].image, 0, 0, 0, m_width, m_height, 0, 0, 1, 1, 0);
+
+	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_DEPTH_TEST);
+#if defined(WIN32)
+	//glSignalVkSemaphoreNV((GLuint64)m_present_done);
+#endif
+}
+
 
 void vkeGameRendererDynamic::initDescriptorLayout(){
 	VkDescriptorSetLayoutBinding sceneLayoutBindings[4];
@@ -1347,29 +1372,6 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 
 }
 
-
-
-void vkeGameRendererDynamic::present(){
-	VulkanDC *dc = VulkanDC::Get();
-	VulkanDC::Device  *device = dc->getDefaultDevice();
-	VulkanDC::Device::Queue *queue = dc->getDefaultQueue();
-
-
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-
-#if defined(WIN32)
-	glWaitVkSemaphoreNV((GLuint64)m_render_done);
-#endif
-	glDrawVkImageNV((GLuint64)m_resolve_attachment[m_current_buffer_index].image, 0, 0, 0, m_width, m_height, 0, 0, 1, 1, 0);
-
-	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_DEPTH_TEST);
-#if defined(WIN32)
-	glSignalVkSemaphoreNV((GLuint64)m_present_done);
-#endif
-}
 
 void vkeGameRendererDynamic::initShaders(nv_helpers_gl::ProgramManager &inProgramManager){
 	VulkanAppContext *ctxt = VulkanAppContext::GetInstance();

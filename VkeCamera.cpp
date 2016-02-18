@@ -90,14 +90,14 @@ void VkeCamera::initCameraData(){
 	m_transform_needs_update = true;
 	m_view_projection_needs_update = true;
 	m_usage_flags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	m_memory_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 	initBackingStore(sizeof(VkeCameraUniform));
-	initVKBufferData();
+	initVKBufferData(false);
 }
 
 void VkeCamera::updateProjection(){
-	//if (!m_projection_needs_update) return;
+	if (!m_projection_needs_update) return;
 	m_aspect = m_viewport.z / m_viewport.w;
 
 	m_projection = nv_math::perspective(m_fov,m_aspect,m_near,m_far);
@@ -107,7 +107,7 @@ void VkeCamera::updateProjection(){
 }
 
 void VkeCamera::updateTransform(){
-	//if (!m_transform_needs_update && !m_use_look_at) return;
+	if (!m_transform_needs_update && !m_use_look_at) return;
 
 	m_transform.reset();
 
@@ -133,7 +133,7 @@ void VkeCamera::updateTransform(){
 }
 
 void VkeCamera::updateViewProjection(){
-	//if (!m_view_projection_needs_update && !m_use_look_at) return;
+	if (!m_view_projection_needs_update && !m_use_look_at) return;
 
 	m_backing_store->view_proj_matrix = m_projection;
 	m_backing_store->view_proj_matrix *= m_transform.getTransform();
@@ -148,7 +148,12 @@ void VkeCamera::updateViewProjection(){
 	m_backing_store->camera_position = nv_math::vec4f(m_position,m_time);
 
 	m_view_projection_needs_update = false;
-	updateVKBufferData();
+}
+
+void VkeCamera::updateCameraCmd(VkCommandBuffer inCommand){
+
+	vkCmdUpdateBuffer(inCommand, m_data.buffer, 0, sizeof(VkeCameraUniform), (const uint32_t *)&(m_backing_store[0]));
+
 }
 
 void VkeCamera::update(){

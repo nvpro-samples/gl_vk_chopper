@@ -95,6 +95,7 @@ public:
 	~VkeCamera();
 
 	void initCameraData();
+	void updateCameraCmd(VkCommandBuffer inCommand);
 	void update();
 
 	void bind(VkCommandBuffer *inBuffer);

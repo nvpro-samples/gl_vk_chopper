@@ -1243,6 +1243,7 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 	uint32_t cnt = m_node_data->count();
 	VkDeviceSize sz = (sizeof(VkeNodeUniform) * cnt) + (m_instance_count * 64);
 	vkCmdUpdateBuffer(m_primary_commands[m_current_buffer_index], m_uniforms_buffer, 0, sz, (const uint32_t *)m_uniforms_local);
+	m_camera->updateCameraCmd(m_primary_commands[m_current_buffer_index]);
 
 	VkBufferMemoryBarrier bufBarrier = { VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER };
 	bufBarrier.dstAccessMask = VK_ACCESS_UNIFORM_READ_BIT;

@@ -141,7 +141,7 @@ public:
 		m_data.descriptor = bufInfo;
 	}
 
-	virtual void initVKBufferData(){
+	virtual void initVKBufferData(bool doUpdate = true){
 		if (m_backing_store == NULL) return;
 
 		if (m_use_staging){
@@ -159,7 +159,7 @@ public:
 		bufferAlloc(&m_data.buffer, &m_data.memory, m_memory_flags);
 
 
-
+		if (doUpdate)
 		updateVKBufferData();
 
 

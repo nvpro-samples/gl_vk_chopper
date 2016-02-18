@@ -159,7 +159,7 @@ void VkeDrawCall::initDrawCommands(const uint32_t inCount, const uint32_t inComm
 
 
 	VkCommandBufferBeginInfo cmdBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-	cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	cmdBeginInfo.flags =  VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
 	VKA_CHECK_ERROR(vkBeginCommandBuffer(m_draw_command[inCommandIndex], &cmdBeginInfo), "Could not begin command buffer.\n");
 
@@ -498,6 +498,8 @@ void vkeGameRendererDynamic::update(){
 	m_camera->setViewport(0, 0, (float)m_width, (float)m_height);
 	m_camera->update();
 
+	generateDrawCommands();
+
 	if (!m_is_first_frame){
 			vkResetFences(device->getVKDevice(), 1, &m_update_fence[m_current_buffer_index]);
 	
@@ -534,7 +536,6 @@ void vkeGameRendererDynamic::update(){
 
 	sTime += 0.16;
 
-	generateDrawCommands();
 
 }
 

@@ -301,7 +301,7 @@ void VkeTexture::loadTextureFloatData(float *inData, uint32_t inWidth, uint32_t 
 
 	}
 
-	samplerCreate(&m_data.sampler, VK_FILTER_NEAREST, VK_FILTER_NEAREST, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL,
+	samplerCreate(&m_data.sampler, VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL,
 		VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
 	imageViewCreate(&m_data.view, m_data.image,VK_IMAGE_VIEW_TYPE_2D,m_format);

@@ -270,9 +270,6 @@ protected:
 	VkDescriptorSetLayout			m_terrain_descriptor_set_layout;
 	VkDescriptorSet					m_terrain_descriptor_set;
 
-	VkImage							m_test_image;
-	VkDeviceMemory					m_test_memory;
-
 	VkBuffer						m_uniforms_buffer_staging;
 	VkDeviceMemory					m_uniforms_staging;
 

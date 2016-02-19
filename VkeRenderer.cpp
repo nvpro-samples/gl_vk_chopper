@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 VkeRenderer::VkeRenderer()
 {
-	m_samples = VK_SAMPLE_COUNT_4_BIT;
+	m_samples = VK_SAMPLE_COUNT_8_BIT;
 	m_width = 1024;
 	m_height = 768;
 }

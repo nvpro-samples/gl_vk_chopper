@@ -312,7 +312,7 @@ void vkeGameRendererDynamic::initRenderer(){
 	VulkanDC *dc = VulkanDC::Get();
 	VulkanDC::Device *device = dc->getDevice();
 
-	m_instance_count = 64;
+	m_instance_count = 128;
 
 	glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glWaitVkSemaphoreNV");
 	glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glSignalVkSemaphoreNV");
@@ -1244,14 +1244,6 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 	VkDeviceSize sz = (sizeof(VkeNodeUniform) * cnt) + (m_instance_count * 64);
 	vkCmdUpdateBuffer(m_primary_commands[m_current_buffer_index], m_uniforms_buffer, 0, sz, (const uint32_t *)m_uniforms_local);
 	m_camera->updateCameraCmd(m_primary_commands[m_current_buffer_index]);
-
-	VkBufferMemoryBarrier bufBarrier = { VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER };
-	bufBarrier.dstAccessMask = VK_ACCESS_UNIFORM_READ_BIT;
-	bufBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-	bufBarrier.dstQueueFamilyIndex = 0;
-	bufBarrier.offset = 0;
-	bufBarrier.buffer = m_uniforms_buffer;
-	bufBarrier.srcQueueFamilyIndex = 0;
 
 
 	renderPassBegin(&m_primary_commands[m_current_buffer_index], m_render_pass, m_framebuffers[m_current_buffer_index], 0, 0, m_width, m_height, clearValues, 3, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);

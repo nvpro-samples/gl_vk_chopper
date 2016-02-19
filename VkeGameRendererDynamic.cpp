@@ -416,7 +416,7 @@ void vkeGameRendererDynamic::setNodeData(VkeNodeData::List *inData){
 		uint32_t sz = sizeof(VkeNodeUniform) * cnt;
 		sz += (transformsSize);
 
-		m_uniforms_local = (float*)malloc(sizeof(float) * sz);
+		m_uniforms_local = (float*)malloc( sz);
 
 		bufferCreate(&m_uniforms_buffer, sz, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 		bufferAlloc(&m_uniforms_buffer, &m_uniforms_memory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);

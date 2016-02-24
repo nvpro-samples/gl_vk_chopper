@@ -506,13 +506,15 @@ void vkeGameRendererDynamic::update(){
 			const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			VkSubmitInfo subInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
 			subInfo.commandBufferCount = 1;
+			subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
+
+#if defined(WIN32)
 			subInfo.waitSemaphoreCount = 1;
 			subInfo.pWaitSemaphores = &m_present_done[m_current_buffer_index];
 			subInfo.pWaitDstStageMask = &waitStages;
 			subInfo.signalSemaphoreCount = 1;
 			subInfo.pSignalSemaphores = &m_render_done[m_current_buffer_index];
-			subInfo.pCommandBuffers = &m_primary_commands[m_current_buffer_index];
-
+#endif
 			vkQueueSubmit(dc->getDefaultQueue()->getVKQueue(), 1, &subInfo, m_update_fence[m_current_buffer_index]);
 
 			/*
@@ -550,14 +552,16 @@ void vkeGameRendererDynamic::present(){
 
 	glDisable(GL_DEPTH_TEST);
 
+#if defined(WIN32)
 	glWaitVkSemaphoreNV((GLuint64)m_render_done[m_current_buffer_index]);
+#endif
 
 	glDrawVkImageNV((GLuint64)m_resolve_attachment[m_current_buffer_index].image, 0, 0, 0, m_width, m_height, 0, 0, 1, 1, 0);
 
 	glEnable(GL_DEPTH_TEST);
-
+#if defined(WIN32)
 	glSignalVkSemaphoreNV((GLuint64)m_present_done[m_current_buffer_index]);
-
+#endif
 }
 
 

@@ -659,7 +659,7 @@ void imageBarrierCreate(
 	image_memory_barrier.pNext = NULL;
 	image_memory_barrier.dstAccessMask = inDstAccessMask;
 	image_memory_barrier.srcAccessMask = inSrcAccessMask;
-	image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+	image_memory_barrier.oldLayout = inOldLayout;
 	image_memory_barrier.newLayout = inNewLayout;
 	image_memory_barrier.image = inImage;
 	image_memory_barrier.subresourceRange = inSubRange;

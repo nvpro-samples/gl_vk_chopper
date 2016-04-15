@@ -317,7 +317,7 @@ void VulkanDC::Device::initDevice(){
 	
 	m_extension_count = 0;
 
-    deviceCreate(&m_device, &m_physical_device, m_queue_count, &queueInfo, m_extension_count, m_extension_names);
+    deviceCreate(&m_device, &m_physical_device, 1, &queueInfo, m_extension_count, m_extension_names);
 
 
     std::cout << "Device ID : " << m_device << std::endl;

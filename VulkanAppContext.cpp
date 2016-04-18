@@ -319,7 +319,7 @@ void VulkanAppContext::initAppContext(){
 	appInfo.applicationVersion = 1;
 	appInfo.pEngineName = "gl_vk_chopper";
 	appInfo.engineVersion = 1;
-	appInfo.apiVersion = VK_API_VERSION;
+        appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
 	/*
 		Set up the instance create info.
 	*/

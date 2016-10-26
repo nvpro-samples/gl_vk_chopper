@@ -21,7 +21,7 @@ if(NOT BASE_DIRECTORY) # if not defined, it means this cmake file was called as 
   elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../shared_sources)
     SET(BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..)
     INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../shared_sources/CMakeLists_include.txt)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../shared_sources ${CMAKE_BINARY_DIR}/shared_sources)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../shared_soources ${CMAKE_BINARY_DIR}/shared_sources)
   else()
     SET(BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
     INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../shared_sources/CMakeLists_include.txt)
@@ -63,15 +63,6 @@ else()
   add_executable(${PROJNAME} ${SOURCE_FILES} ${COMMON_SOURCE_FILES} ${PACKAGE_SOURCE_FILES} ${GLSL_FILES})
 endif()
 
-    if(UNIX)
-      add_definitions(-g -std=c++11)
-      set(UNIXLINKLIBS dl png assimp pthread)
-    else()
-      set(UNIXLINKLIBS)
-    endif()
-
-
-
 #####################################################################################
 # common source code needed for this sample
 #
@@ -90,13 +81,11 @@ target_link_libraries(${PROJNAME} optimized
     ${LIBRARIES_OPTIMIZED}
     ${PLATFORM_LIBRARIES}
     shared_sources
-     ${UNIXLINKLIBS}
 )
 target_link_libraries(${PROJNAME} debug
     ${LIBRARIES_DEBUG}
     ${PLATFORM_LIBRARIES}
     shared_sources
-    ${UNIXLINKLIBS}
 )
 
 #####################################################################################

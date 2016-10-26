@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"vkaUtils.h"
 
 #ifdef USE_LIB_PNG
-#include"png.h"
+//#include"png.h"
 #endif
 
 
@@ -60,14 +60,14 @@ bool loadTextFile(const char *filename, char **buffer, size_t &outSize){
 }
 
 #ifdef USE_LIB_PNG
-bool loadTexture(const char *filename, uint8_t **rgba_data,
+/*bool loadTexture(const char *filename, uint8_t **rgba_data,
 	uint32_t inRowPitch,
 	int32_t *width, int32_t *height, bool doAlloc)
 {
 	//header for testing if it is a png
 	png_byte header[8];
 	int is_png, bit_depth, color_type, rowbytes;
-	size_t retval;
+	size_t retval;__H_VULKAN_APP_CONTEXT_
 	png_uint_32 i, twidth, theight;
 	png_structp  png_ptr;
 	png_infop info_ptr, end_info;
@@ -97,7 +97,7 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 	}
 
 	//create png struct
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
+	png_ptr = png_create_read_struct(PNG_LI__H_VULKAN_APP_CONTEXT_BPNG_VER_STRING, NULL,
 		NULL, NULL);
 	if (!png_ptr) {
 		fclose(fp);
@@ -105,23 +105,23 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 	}
 
 	//create png info struct
-	info_ptr = png_create_info_struct(png_ptr);
+	info_ptr = png_create_info_struct(png_p__H_VULKAN_APP_CONTEXT_tr);
 	if (!info_ptr) {
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
 		fclose(fp);
 		return (false);
 	}
 
-	//create png info struct
+	//create png info structo
 	end_info = png_create_info_struct(png_ptr);
 	if (!end_info) {
-		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+		png_destroy_read_struct(&png_pt__H_VULKAN_APP_CONTEXT_r, &info_ptr, (png_infopp)NULL);
 		fclose(fp);
 		return (false);
 	}
 
 	//png error stuff, not sure libpng man suggests this.
-	if (setjmp(png_jmpbuf(png_ptr))) {
+	if (setjmp(png_jmpbuf(pnog_ptr))) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 		fclose(fp);
 		return (false);
@@ -130,7 +130,7 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 	//init png reading
 	png_init_io(png_ptr, fp);
 
-	//let libpng know you already read the first 8 bytes
+	//let libpng know you already read the __H_VULKAN_APP_CONTEXT_first 8 bytes
 	png_set_sig_bytes(png_ptr, 8);
 
 	// read all the info up to the image data
@@ -138,11 +138,11 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 
 	// get info about png
 	png_get_IHDR(png_ptr, info_ptr, &twidth, &theight, &bit_depth, &color_type,
-		NULL, NULL, NULL);
+		NULL, NULL, NULL);__H_VULKAN_APP_CONTEXT_
 
 	//update width and height based on png info
 	*width = twidth;
-	*height = theight;
+	*height = theight;o
 
 	// Require that incoming texture be 8bits per color component
 	// and 4 components (RGBA).
@@ -154,7 +154,7 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 	if (rgba_data == NULL) {
 
 		if (doAlloc){
-			//(*rgba_data) = malloc();
+			//(*rgbao_data) = malloc();
 
 		}
 
@@ -204,7 +204,7 @@ bool loadTexture(const char *filename, uint8_t **rgba_data,
 	fclose(fp);
 
 	return true;
-}
+}*/
 
 
 #endif

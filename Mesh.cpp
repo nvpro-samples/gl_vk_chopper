@@ -124,7 +124,6 @@ Triangle4f &Mesh::getTransformedTriangle(Mat4x4f &inTransform, const uint32_t in
 	return out;
 }
 
-
 void Mesh::dispose(){
 	if (m_vertices){
 		delete[] m_vertices;
@@ -156,8 +155,6 @@ void Mesh::getTransformedTriangles(Mat4x4f &inTransform,TriangleList4f &outTrian
 	}
 
 }
-
-
 
 Mesh::~Mesh()
 {

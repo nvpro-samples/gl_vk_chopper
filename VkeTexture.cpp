@@ -168,7 +168,7 @@ void VkeTexture::loadDDSTextureFile(const char *inFile){
 		const nv_dds::CSurface &mipmap = ddsImage.get_mipmap(0);
 		uint32_t sz = mipmap.get_size();
 
-		memcpy(data, (void *)mipmap, layout.size);
+		memcpy(data, (void *)mipmap, sz);
 
 		vkUnmapMemory(getDefaultDevice(), stagingTex.memory);
 		VkCommandBuffer cmd = VK_NULL_HANDLE;

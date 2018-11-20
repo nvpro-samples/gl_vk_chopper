@@ -319,7 +319,7 @@ void VulkanAppContext::initAppContext(){
 	appInfo.applicationVersion = 1;
 	appInfo.pEngineName = "gl_vk_chopper";
 	appInfo.engineVersion = 1;
-        appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.apiVersion = VK_API_VERSION_1_0;
 	/*
 		Set up the instance create info.
 	*/
@@ -364,29 +364,33 @@ bool VulkanAppContext::initPrograms(nv_helpers_gl::ProgramManager &inProgramMana
 	/*
 		Initialise the shaders used for the demo.
 	*/
-	inProgramManager.addDirectory(std::string(PROJECT_NAME));
-	inProgramManager.addDirectory(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY));
-	inProgramManager.addDirectory(std::string(PROJECT_ABSDIRECTORY));
+    inProgramManager.addDirectory(std::string("./GLSL_" PROJECT_NAME));
+	inProgramManager.addDirectory(std::string(PROJECT_NAME) + std::string("shaders"));
+	inProgramManager.addDirectory(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("shaders") );
+	//inProgramManager.addDirectory(std::string(PROJECT_ABSDIRECTORY));
 
 	m_program_ids.scene = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "shaders/std_vertex.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "shaders/std_fragment.glsl"));
+		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "std_vertex.glsl"),
+		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "std_fragment.glsl"));
 
 	m_program_ids.scene_quad = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "shaders/vertexQuad.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "shaders/fragmentQuad.glsl"));
+		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "vertexQuad.glsl"),
+		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "fragmentQuad.glsl"));
 
 	m_program_ids.scene_terrain = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "shaders/vertexTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "shaders/fragmentTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_TESS_CONTROL_SHADER, "shaders/tcsTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_TESS_EVALUATION_SHADER, "shaders/tesTerrain.glsl")
+		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "vertexTerrain.glsl"),
+		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "fragmentTerrain.glsl"),
+		nv_helpers_gl::ProgramManager::Definition(GL_TESS_CONTROL_SHADER, "tcsTerrain.glsl"),
+		nv_helpers_gl::ProgramManager::Definition(GL_TESS_EVALUATION_SHADER, "tesTerrain.glsl")
 		);
 
 	/*
 		Check that the programs are valid.
 	*/
-	return inProgramManager.areProgramsValid();
+    bool bRes = inProgramManager.areProgramsValid();
+    if(bRes) { LOGOK("GLSL programs validated\n") }
+    else     { LOGE("GLSL programs validation failed\n") }
+	return bRes;
 }
 
 VkeMaterial *VulkanAppContext::getMaterial(VkeMaterial::ID inID){

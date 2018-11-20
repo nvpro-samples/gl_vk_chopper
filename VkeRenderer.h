@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"VkeMesh.h"
 #include"VkeNodeData.h"
 #include<map>
-#include<nv_helpers_gl/programmanager.hpp>
+#include<nv_helpers_gl/programmanager_gl.hpp>
 
 #pragma once
 class VkeRenderer

@@ -27,27 +27,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __H_VKA_UTILS_
 #define __H_VKA_UTILS_
 
-#include<vulkan/vulkan.h>
-#include<stdio.h>
-#include<nv_math/nv_math.h>
-
-
-#define VKA_DEBUG_MSG(msg)\
-	printf("DEBUG \t : \t");\
-	printf(msg);
-
-#define VKA_ERROR_MSG(msg)\
-	printf("ERROR \t : \t");\
-	printf(msg);
-
-#define VKA_INFO_MSG(msg)\
-	printf("INFO \t : \t");\
-	printf(msg);
+#include <vulkan/vulkan.h>
+#include <stdio.h>
+#include <nv_math/nv_math.h>
+#include "nv_helpers/nvprint.hpp"
 
 #define VKA_CHECK_ERROR(func,msg)\
 {VkResult rslt = func;\
     if(rslt != VK_SUCCESS){\
-    printf("ERROR \t [%d] : %s \n",rslt,msg);\
+    LOGE("ERROR \t [%d] : %s \n",rslt,msg);\
     }}
 
 

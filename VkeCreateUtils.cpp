@@ -24,11 +24,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#include"VkeCreateUtils.h"
-#include"VulkanDeviceContext.h"
-#include<memory.h>
-#include<vulkan/vulkan.h>
-#include<iostream>
+#include "VkeCreateUtils.h"
+#include "VulkanDeviceContext.h"
+#include <memory.h>
+#include <vulkan/vulkan.h>
+#include <iostream>
+#include "nv_helpers/nvprint.hpp"
 
 VkDevice getDefaultDevice(){
 	VulkanDC *dc = VulkanDC::Get();
@@ -830,7 +831,7 @@ void graphicsPipelineCreate(
     VkResult rslt = vkCreateGraphicsPipelines(getDefaultDevice(), *inCache, 1, &pipeline, NULL,outPipeline);
 
     if(rslt != VK_SUCCESS){
-        printf("Could not create graphics pipeline. %d\n",rslt);
+        LOGE("Could not create graphics pipeline. %d\n",rslt);
     }
 
 }
@@ -890,7 +891,7 @@ void graphicsPipelineCreate(
     VkResult rslt = vkCreateGraphicsPipelines(getDefaultDevice(), *inCache, 1, &pipeline,NULL, outPipeline);
 
     if(rslt != VK_SUCCESS){
-        printf("Could not create graphics pipeline. %d\n",rslt);
+        LOGE("Could not create graphics pipeline. %d\n",rslt);
     }
 
 }
@@ -909,7 +910,7 @@ void  createShader(const char *fileName, VkShaderStageFlagBits inStage, VkShader
 
 	loadTextFile(fileName, &buf, sz);
 
-    printf("Shader Source : %s\n",buf);
+    LOGI("Shader Source : %s\n",buf);
 
 	moduleInfo.codeSize = sz+1;
     moduleInfo.pCode = (const uint32_t *)buf;
@@ -919,7 +920,7 @@ void  createShader(const char *fileName, VkShaderStageFlagBits inStage, VkShader
 
 	err = vkCreateShaderModule(getDefaultDevice(), &moduleInfo,NULL, outModule);
 	if (err != VK_SUCCESS){
-		VKA_ERROR_MSG("Could not create shader module.\n");
+		LOGE("Could not create shader module.\n");
 		return;
 	}
 
@@ -1199,10 +1200,10 @@ void deviceCreate(
 
 	deviceCreateInfo(
 		&devInfo,
-		inQueueCount,
+		1,
 		inQueues,
 		inExtensionCount,
-		inExtensionNames,
+		NULL,
 		inLayerCount,
 		inLayerNames,
 		inFeatures);

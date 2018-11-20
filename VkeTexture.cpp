@@ -24,10 +24,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
+#include <include_gl.h>
+
 #include "VkeTexture.h"
 #include "vkaUtils.h"
 #include "VkeCreateUtils.h"
-#include <nv_helpers_gl/nv_dds.h>
+#include "nv_helpers/nv_dds.h"
+#include "nv_helpers/nvprint.hpp"
 #include<main.h>
 #include<iostream>
 
@@ -71,25 +74,28 @@ void VkeTexture::loadDDSTextureFile(const char *inFile){
 
 
 
-	std::string searchPaths[] = {
-		std::string(PROJECT_NAME),
-		NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY),
-		std::string(PROJECT_ABSDIRECTORY)
-	};
-
+    std::vector<std::string> searchPaths;
+    searchPaths.push_back(std::string("."));
+    searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
+    searchPaths.push_back(std::string(PROJECT_NAME) + std::string("/images"));
+    searchPaths.push_back(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("/images"));
+    //searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY);
 
 	nv_dds::CDDSImage ddsImage;
 
-	for (uint32_t i = 0; i < 3; ++i){
-		std::string filePath = searchPaths[i] + "/" + std::string("images/") + std::string(inFile);
+    std::string filePath;
+	for (uint32_t i = 0; i < searchPaths.size(); ++i){
+		filePath = searchPaths[i] + "/" + std::string(inFile);
 		ddsImage.load(filePath, true);
 		if (ddsImage.is_valid()) break;
 	}
 
 	if (!ddsImage.is_valid()){
-		perror("Could not load texture image.\n");
+        LOGE("Could not load texture image %s\n", inFile);
 		exit(1);
-	}
+	} else {
+        LOGI("loaded texture image %s\n", filePath.c_str());
+    }
 
 	uint32_t imgW = ddsImage.get_width();
 	uint32_t imgH = ddsImage.get_height();
@@ -168,7 +174,7 @@ void VkeTexture::loadDDSTextureFile(const char *inFile){
 		const nv_dds::CSurface &mipmap = ddsImage.get_mipmap(0);
 		uint32_t sz = mipmap.get_size();
 
-		memcpy(data, (void *)mipmap, sz);
+		memcpy(data, (void *)mipmap, layout.size);
 
 		vkUnmapMemory(getDefaultDevice(), stagingTex.memory);
 		VkCommandBuffer cmd = VK_NULL_HANDLE;
@@ -306,10 +312,8 @@ void VkeTexture::loadTextureFloatData(float *inData, uint32_t inWidth, uint32_t 
 
 	imageViewCreate(&m_data.view, m_data.image,VK_IMAGE_VIEW_TYPE_2D,m_format);
 
-	VKA_INFO_MSG("Texture Loaded.\n");
-
-
-	VKA_INFO_MSG("Floating Point Texture Loaded.\n");
+	LOGI("Texture Loaded.\n");
+    LOGI("Floating Point Texture Loaded.\n");
 
 }
 

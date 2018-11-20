@@ -39,13 +39,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef GL_NV_draw_vulkan_image
 #define GL_NV_draw_vulkan_image 1
-#ifdef GL_GLEXT_PROTOTYPES
-//GLAPI GLVULKANPROCNV GLAPIENTRY glGetVkInstanceProcAddrNV (const GLchar *name);
-GLAPI void GLAPIENTRY glWaitVkSemaphoreNV(GLuint64 vkSemaphore);
-GLAPI void GLAPIENTRY glSignalVkSemaphoreNV(GLuint64 vkSemaphore);
-GLAPI void GLAPIENTRY glSignalVkFenceNV(GLuint64 vkFence);
-GLAPI void GLAPIENTRY glDrawVkImageNV(GLuint64 vkImage, GLuint sampler, GLfloat x0, GLfloat y0, GLfloat x1, GLfloat y1, GLfloat z, GLfloat s0, GLfloat t0, GLfloat s1, GLfloat t1);
-#endif /* GL_GLEXT_PROTOTYPES */
 //typedef GLVULKANPROCNV (GLAPIENTRY* PFNGLGETVKINSTANCEPROCADDRNVPROC) (const GLchar *name);
 typedef void (GLAPIENTRY* PFNGLWAITVKSEMAPHORENVPROC) (GLuint64 vkSemaphore);
 typedef void (GLAPIENTRY* PFNGLSIGNALVKSEMAPHORENVPROC) (GLuint64 vkSemaphore);
@@ -58,6 +51,13 @@ PFNGLSIGNALVKFENCENVPROC            glSignalVkFenceNV;
 PFNGLDRAWVKIMAGENVPROC              glDrawVkImageNV;
 #endif
 
+#ifdef GL_GLEXT_PROTOTYPES
+//GLAPI GLVULKANPROCNV GLAPIENTRY glGetVkInstanceProcAddrNV (const GLchar *name);
+//GLAPI void GLAPIENTRY glWaitVkSemaphoreNV(GLuint64 vkSemaphore);
+//GLAPI void GLAPIENTRY glSignalVkSemaphoreNV(GLuint64 vkSemaphore);
+//GLAPI void GLAPIENTRY glSignalVkFenceNV(GLuint64 vkFence);
+//GLAPI void GLAPIENTRY glDrawVkImageNV(GLuint64 vkImage, GLuint sampler, GLfloat x0, GLfloat y0, GLfloat x1, GLfloat y1, GLfloat z, GLfloat s0, GLfloat t0, GLfloat s1, GLfloat t1);
+#endif /* GL_GLEXT_PROTOTYPES */
 
 VkeDrawCall::VkeDrawCall(vkeGameRendererDynamic *inRenderer) :
 m_renderer(inRenderer),
@@ -314,10 +314,10 @@ void vkeGameRendererDynamic::initRenderer(){
 
 	m_instance_count = 128;
 
-	glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glWaitVkSemaphoreNV");
-	glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddress("glSignalVkSemaphoreNV");
-	glSignalVkFenceNV = (PFNGLSIGNALVKFENCENVPROC)NVPWindow::sysGetProcAddress("glSignalVkFenceNV");
-	glDrawVkImageNV = (PFNGLDRAWVKIMAGENVPROC)NVPWindow::sysGetProcAddress("glDrawVkImageNV");
+	//glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddressGL("glWaitVkSemaphoreNV");
+	//glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddressGL("glSignalVkSemaphoreNV");
+	//glSignalVkFenceNV = (PFNGLSIGNALVKFENCENVPROC)NVPWindow::sysGetProcAddressGL("glSignalVkFenceNV");
+//	glDrawVkImageNV = (PFNGLDRAWVKIMAGENVPROC)NVPWindow::sysGetProcAddressGL("glDrawVkImageNV");
 
 	VkSemaphoreCreateInfo semInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
 	VkFenceCreateInfo fenceInfo = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};

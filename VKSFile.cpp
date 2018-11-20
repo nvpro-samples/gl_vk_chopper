@@ -24,9 +24,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#include"VKSFile.h"
-#include<iostream>
-#include<main.h>
+#include "VKSFile.h"
+#include "nv_helpers/nvprint.hpp"
+#include <iostream>
+#include <main.h>
 
 #if defined(WIN32)
 #else
@@ -45,23 +46,28 @@ void readVKSFile(VKSFile *inFile){
 
 	FILE *fp;
 
-	std::string searchPaths[] = {
-		std::string(PROJECT_NAME),
-		NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY),
-		std::string(PROJECT_ABSDIRECTORY)
-	};
+	std::vector<std::string> searchPaths;
+    searchPaths.push_back(std::string("."));
+    searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
+    searchPaths.push_back(std::string(PROJECT_NAME));
+    searchPaths.push_back(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY));
+	//searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY));
 
-	for (uint32_t i = 0; i < 3; ++i){
-		std::string filePath = searchPaths[i] + "/" + inFile->outputFile;
+    std::string filePath;
+	for (uint32_t i = 0; i < searchPaths.size(); ++i){
+		filePath = searchPaths[i] + "/" + inFile->outputFile;
 
 		fopen_s(&fp, filePath.c_str(), "rb");
 		if (fp) break;
 	}
 
 	if (!fp){
-		perror("Could not load vks file.\n");
+		LOGE("Could not load vks file %s\n", filePath.c_str());
 		exit(1);
-	}
+    }
+    else {
+        LOGOK("Loaded model %s\n", filePath.c_str())
+    }
 
 	fread_s((void *)&inFile->header, sizeof(VKSFileHeader), sizeof(VKSFileHeader), 1, fp);
 

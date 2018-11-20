@@ -78,8 +78,8 @@ VkShaderModule VkeRenderer::createVKShader(nv_helpers_gl::ProgramManager &inProg
 		memset(&shaderModuleInfo, 0, sizeof(shaderModuleInfo));
 		shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 
-		shaderModuleInfo.codeSize = pgm.definitions[i].preprocessed.size();
-		shaderModuleInfo.pCode = (const uint32_t*)pgm.definitions[i].preprocessed.c_str();
+		shaderModuleInfo.codeSize = pgm.definitions[i].content.size();
+		shaderModuleInfo.pCode = (const uint32_t*)pgm.definitions[i].content.c_str();
 		
 		VkShaderModule shaderModule;
 

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"RenderContext.h"
 #include"VkeMesh.h"
 #include<nv_math/nv_math.h>
-#include<nv_helpers_gl/programmanager.hpp>
+#include<nv_helpers_gl/programmanager_gl.hpp>
 #include"VkeSceneAnimation.h"
 
 

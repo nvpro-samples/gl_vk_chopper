@@ -24,12 +24,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
+#include <include_gl.h>
+
 #include "VkeCubeTexture.h"
 #include "vkaUtils.h"
 #include "VkeCreateUtils.h"
 #include <iostream>
 #include<main.h>
-#include <nv_helpers_gl/nv_dds.h>
+#include <nv_helpers/nv_dds.h>
+#include "nv_helpers/nvprint.hpp"
 
 #ifndef INIT_COMMAND_ID
 #define INIT_COMMAND_ID 1
@@ -70,27 +73,32 @@ void VkeCubeTexture::initTexture(){
 void VkeCubeTexture::loadCubeDDS(const char *inFile){
 
 
-	std::string searchPaths[] = {
-		std::string(PROJECT_NAME),
-		NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY),
-		std::string(PROJECT_ABSDIRECTORY)
-	};
+	std::vector<std::string> searchPaths;
+    searchPaths.push_back(std::string("."));
+    searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
+    searchPaths.push_back(std::string(PROJECT_NAME) + std::string("/images"));
+    searchPaths.push_back(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("/images"));
+    //searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY);
 
 	nv_dds::CDDSImage ddsImage;
 
-	for (uint32_t i = 0; i < 3; ++i){
+    std::string filePath;
+	for (uint32_t i = 0; i < searchPaths.size(); ++i){
         std::string separator = "";
         uint32_t strSize = searchPaths[i].size();
         if(searchPaths[i].substr(strSize-1,strSize) != "/") separator = "/";
-        std::string filePath = searchPaths[i] + separator + std::string("images/") + std::string(inFile);
+        filePath = searchPaths[i] + separator + std::string(inFile);
         ddsImage.load(filePath, true);
 		if (ddsImage.is_valid()) break;
 	}
 
 	if (!ddsImage.is_valid()){
-		perror("Could not cube load texture image.\n");
+		LOGE("Could not cube load texture image %s\n", inFile);
 		exit(1);
-	}
+    }
+    else {
+        LOGI("loaded texture image %s\n", filePath.c_str());
+    }
 
 	uint32_t imgW = ddsImage.get_width();
 	uint32_t imgH = ddsImage.get_height();
@@ -271,7 +279,7 @@ void VkeCubeTexture::loadTextureFiles(const char **inPath){
 	for (uint32_t i = 0; i < 6; ++i){
 		if (!loadTexture(inPath[i], NULL, NULL, &m_width, &m_height)){
 			VKA_ERROR_MSG("Error loading texture image.\n");
-			printf("Texture : %d not available (%s).\n", i, inPath[i]);
+            LOGE("Texture : %d not available (%s).\n", i, inPath[i]);
 			return;
 		}
 	}

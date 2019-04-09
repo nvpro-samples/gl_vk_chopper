@@ -40,9 +40,9 @@ public:
 	~Camera();
 
 
-	nv_math::mat4f &getProjection(){ return m_projection; }
-	nv_math::mat4f &getViewProjection() {
-		nv_math::mat4f out;
+	nvmath::mat4f &getProjection(){ return m_projection; }
+	nvmath::mat4f &getViewProjection() {
+		nvmath::mat4f out;
 		out.identity();
 		out = m_projection * out;
 		out = m_transform(out);
@@ -87,7 +87,7 @@ public:
 
 protected:
 
-	nv_math::mat4f m_projection;
+	nvmath::mat4f m_projection;
 
 	float m_fov;
 	float m_near;

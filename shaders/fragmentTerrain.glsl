@@ -22,10 +22,8 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
-#extension GL_ARB_shading_language_include : enable
 
-in FS_OUT{
+layout(location=0) in FS_OUT{
 	vec4 pos;
 	vec4 wPos;
 	vec3 nml;

@@ -22,7 +22,6 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
 
 layout(vertices = 4) out;
 
@@ -37,13 +36,13 @@ layout(std140, binding = 1) uniform cameraBuffer{
 };
 
 
-in VS_OUT{
+layout(location=0) in VS_OUT{
 	vec4 pos;
 	vec2 uv;
 } tcs_in[];
 
 
-out VS_OUT{
+layout(location=0) out VS_OUT{
 	vec4 pos;
 	vec2 uv;
 } tcs_out[];

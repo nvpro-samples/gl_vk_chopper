@@ -59,9 +59,9 @@ bool Node::update(bool inUpdateChildren){
 		if (m_parent) parentTransform = &m_parent->GetTransform();
 
 		m_transform.reset();
-        nv_math::vec4f tra = nv_math::vec4f(m_position,1.0);
+        nvmath::vec4f tra = nvmath::vec4f(m_position,1.0);
         m_transform.translate(tra);
-		nv_math::quatf q;
+		nvmath::quatf q;
 		q.from_euler_xyz(m_rotation);
 		m_transform.rotate(q);
 
@@ -81,13 +81,13 @@ bool Node::update(bool inUpdateChildren){
 	return updated;
 }
 
-nv_math::vec4f Node::worldPosition(){
-	nv_math::vec4f outPosition(0.0, 0.0, 0.0, 1.0);
+nvmath::vec4f Node::worldPosition(){
+	nvmath::vec4f outPosition(0.0, 0.0, 0.0, 1.0);
 
 	return m_transform(outPosition);
 }
 
-nv_math::vec4f Node::worldPosition(nv_math::vec4f &inPosition){
+nvmath::vec4f Node::worldPosition(nvmath::vec4f &inPosition){
 	return m_transform(inPosition);
 }
 
@@ -103,8 +103,8 @@ void Node::setPosition(float inX, float inY, float inZ){
 	m_transform_needs_update = true;
 }
 
-void Node::setRotation(nv_math::quatf &inQuat){
-	nv_math::vec3f angles;
+void Node::setRotation(nvmath::quatf &inQuat){
+	nvmath::vec3f angles;
 	inQuat.to_euler_xyz(angles);
 	setRotation(angles.x, angles.y, angles.z);
 }

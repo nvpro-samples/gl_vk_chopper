@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include"VkeAnimationNode.h"
 
 class VkeSceneAnimation

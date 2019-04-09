@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include"VkeBuffer.h"
 #include<map>
 #include<vector>
@@ -37,9 +37,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"VkeTexture.h"
 
 typedef struct VkeMaterialUniform{
-	//nv_math::vec4f diffuseColor;
-	//nv_math::vec4f ambientColor;
-	//nv_math::vec4f specularColor;
+	//nvmath::vec4f diffuseColor;
+	//nvmath::vec4f ambientColor;
+	//nvmath::vec4f specularColor;
 	float reflectivity;
 	float shininess;
 	float opacity;
@@ -47,7 +47,7 @@ typedef struct VkeMaterialUniform{
 	float padding;
 	float morepadding[48];
 
-};
+} VkeMaterialUniform;
 
 class VKSFile;
 class VKSMaterialRecord;

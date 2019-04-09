@@ -30,9 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vkaUtils.h"
 #include "VkeCreateUtils.h"
 #include <iostream>
-#include<main.h>
-#include <nv_helpers/nv_dds.h>
-#include "nv_helpers/nvprint.hpp"
+#include <nvh/nv_dds.h>
+#include "nvh/nvprint.hpp"
+#include "nvpwindow.hpp"
 
 #ifndef INIT_COMMAND_ID
 #define INIT_COMMAND_ID 1

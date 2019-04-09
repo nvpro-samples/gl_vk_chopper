@@ -70,7 +70,7 @@ void Camera::updateProjection(){
 
 	float aspect = vw / vh;
 
-	m_projection = nv_math::perspective(m_fov, aspect, m_near, m_far);
+	m_projection = nvmath::perspective(m_fov, aspect, m_near, m_far);
 
 	m_projection_dirty = false;
 

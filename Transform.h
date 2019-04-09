@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 
 class Transform
 {
@@ -39,40 +39,43 @@ public:
 
 	void reset();
 	void update(Transform *inParent = NULL);
-	void translate(nv_math::vec4f &inPosition);
+	void translate(nvmath::vec4f &inPosition);
 	void translate(float inX, float inY, float inZ);
 
-	void rotate(const float inValue,  nv_math::vec3f &inBasis);
-	void rotate(nv_math::quatf &inQuaterion);
+	void rotate(const float inValue, nvmath::vec3f& inBasis);
+  void rotate(nvmath::quatf& inQuaterion);
 
-	void scale(const nv_math::vec3f &inScale);
+	void scale(const nvmath::vec3f& inScale);
 	void scale(const float inX, const float inY, const float inZ);
 
-	nv_math::vec4f &operator()(nv_math::vec4f &rhs){
-		nv_math::vec4f out = m_transform * rhs;
+	nvmath::vec4f operator()(nvmath::vec4f& rhs)
+  {
+    nvmath::vec4f out = m_transform * rhs;
 		return out;
 	}
 
-	nv_math::mat4f &operator()(nv_math::mat4f &rhs){
-		nv_math::mat4f out = rhs * m_transform;
+	nvmath::mat4f operator()(nvmath::mat4f& rhs)
+  {
+    nvmath::mat4f out = rhs * m_transform;
 		return out;
 	}
 
-	nv_math::vec4f &operator[](nv_math::vec4f &rhs){
-		nv_math::vec4f out = m_inverse * rhs;
+	nvmath::vec4f operator[](nvmath::vec4f& rhs)
+  {
+    nvmath::vec4f out = m_inverse * rhs;
 		return out;
 	}
 
-	nv_math::mat4f &getTransform() { return m_transform; }
-	nv_math::mat4f &getInverse() { return m_inverse; }
+	nvmath::mat4f&  getTransform() { return m_transform; }
+  nvmath::mat4f& getInverse() { return m_inverse; }
 
-	void setMatrix(nv_math::mat4f &inMatrix){ m_matrix = inMatrix; }
+	void setMatrix(nvmath::mat4f& inMatrix) { m_matrix = inMatrix; }
 
 private:
 
-	nv_math::mat4f m_transform;
-	nv_math::mat4f m_inverse;
-	nv_math::mat4f m_matrix;
+	nvmath::mat4f  m_transform;
+  nvmath::mat4f  m_inverse;
+  nvmath::mat4f  m_matrix;
 
 };
 

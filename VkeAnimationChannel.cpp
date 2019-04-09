@@ -40,29 +40,29 @@ void VkeAnimationChannel::setParent(VkeSceneAnimation *inParent){
 	m_parent = inParent;
 }
 
-VkeAnimationKey *VkeAnimationChannel::newKey(double &inTime, nv_math::vec4f &inData){
+VkeAnimationKey *VkeAnimationChannel::newKey(double &inTime, nvmath::vec4f &inData){
 	if (m_parent){
 		m_parent->updateDuration(inTime);
 	}
 	return	m_keys.newKey(inTime, inData);
 }
 
-nv_math::vec4f cubicLerp(nv_math::vec4f inA, nv_math::vec4f inB, float inT){
+nvmath::vec4f cubicLerp(nvmath::vec4f inA, nvmath::vec4f inB, float inT){
 	float c = (3.0 - 2.0 * inT) * inT * inT;
 
 	inA *= (float)(1.0 - c);
 	inB *= (float)c;
-	nv_math::vec4f outValue = inA;
+	nvmath::vec4f outValue = inA;
 	outValue += inB;
 	return outValue;
 }
 
-nv_math::quatf cubicLerp(nv_math::quatf inA, nv_math::quatf inB, float inT){
+nvmath::quatf cubicLerp(nvmath::quatf inA, nvmath::quatf inB, float inT){
 	float c = (3.0 - 2.0 * inT) * inT * inT;
-	return nv_math::slerp_quats(c, inA, inB);
+	return nvmath::slerp_quats(c, inA, inB);
 }
 
-nv_math::quatf VkeAnimationChannel::currentQuatValue(){
+nvmath::quatf VkeAnimationChannel::currentQuatValue(){
 
 
 	VkeAnimationKeyPair pair;
@@ -72,39 +72,39 @@ nv_math::quatf VkeAnimationChannel::currentQuatValue(){
 	//no keys found at all for this time.
 	//Therefore there should not have been a channel
 	//for this node in the first place.
-    if (!pair.low && !pair.high) return nv_math::quatf();
+    if (!pair.low && !pair.high) return nvmath::quatf();
 	if (!pair.high){
-		nv_math::vec4f vValue = pair.low->getValue();
-		nv_math::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+		nvmath::vec4f vValue = pair.low->getValue();
+		nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
 		return qValue;
 
 	}
 	if (!pair.low){
-		nv_math::vec4f vValue = pair.high->getValue();
-		nv_math::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+		nvmath::vec4f vValue = pair.high->getValue();
+		nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
 		return qValue;
 
 	}
 
 	double timeDelta = pair.high->getTime() - pair.low->getTime();
-    if (timeDelta == 0.0) return (nv_math::quatf)pair.low->getValue();
+    if (timeDelta == 0.0) return (nvmath::quatf)pair.low->getValue();
 
 	double durationDelta = curTime - pair.low->getTime();
 
 	double timeScale = durationDelta / timeDelta;
 
-	nv_math::vec4f lowVal = pair.low->getValue();
-	nv_math::vec4f highVal = pair.high->getValue();
+	nvmath::vec4f lowVal = pair.low->getValue();
+	nvmath::vec4f highVal = pair.high->getValue();
 
-	nv_math::quatf quatA(lowVal.x, lowVal.y, lowVal.z, lowVal.w);
-	nv_math::quatf quatB(highVal.x, highVal.y, highVal.z, highVal.w);
+	nvmath::quatf quatA(lowVal.x, lowVal.y, lowVal.z, lowVal.w);
+	nvmath::quatf quatB(highVal.x, highVal.y, highVal.z, highVal.w);
 
-	nv_math::quatf outQuat = cubicLerp(quatA, quatB, timeScale);
+	nvmath::quatf outQuat = cubicLerp(quatA, quatB, timeScale);
 
 	return outQuat;
 }
 
-nv_math::vec4f VkeAnimationChannel::currentValue(){
+nvmath::vec4f VkeAnimationChannel::currentValue(){
 
 
 	VkeAnimationKeyPair pair;
@@ -114,7 +114,7 @@ nv_math::vec4f VkeAnimationChannel::currentValue(){
 	//no keys found at all for this time.
 	//Therefore there should not have been a channel
 	//for this node in the first place.
-	if (!pair.low && !pair.high) return nv_math::vec4f(0.0, 0.0, 0.0);
+	if (!pair.low && !pair.high) return nvmath::vec4f(0.0, 0.0, 0.0);
 	if (!pair.high) return pair.low->getValue();
 	if (!pair.low) return pair.high->getValue();
 
@@ -125,10 +125,10 @@ nv_math::vec4f VkeAnimationChannel::currentValue(){
 
 	double timeScale = durationDelta / timeDelta;
 
-	nv_math::vec4f lowVal = pair.low->getValue();
-	nv_math::vec4f highVal = pair.high->getValue();
+	nvmath::vec4f lowVal = pair.low->getValue();
+	nvmath::vec4f highVal = pair.high->getValue();
 
-	nv_math::vec4f outVal = cubicLerp(lowVal, highVal, timeScale);
+	nvmath::vec4f outVal = cubicLerp(lowVal, highVal, timeScale);
 
 //	lowVal *= (float)(1.0 - timeScale);
 //	highVal *= (float)timeScale;

@@ -29,9 +29,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VkeTexture.h"
 #include "vkaUtils.h"
 #include "VkeCreateUtils.h"
-#include "nv_helpers/nv_dds.h"
-#include "nv_helpers/nvprint.hpp"
-#include<main.h>
+#include "nvh/nv_dds.h"
+#include "nvh/nvprint.hpp"
+#include "nvpwindow.hpp"
 #include<iostream>
 
 #ifndef INIT_COMMAND_ID

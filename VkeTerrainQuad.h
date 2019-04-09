@@ -31,13 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include"VkeBuffer.h"
 #include"VkeVBO.h"
 #include"VkeIBO.h"
 
 typedef struct _TerrainUniform{
-	nv_math::mat4f view_matrix;
+	nvmath::mat4f view_matrix;
 }TerrainUniform;
 
 class VkeTerrainQuad : public VkeBuffer<TerrainUniform>

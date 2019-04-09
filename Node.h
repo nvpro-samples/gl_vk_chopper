@@ -83,12 +83,12 @@ public:
 
 	void setPosition(float inX, float inY, float inZ);
 	void setRotation(float inX, float inY, float inZ);
-	void setRotation(nv_math::quatf &inQuat);
+	void setRotation(nvmath::quatf &inQuat);
 	void setScale(float inX, float inY, float inZ);
 	void setScale(float inScale);
 
-	nv_math::vec4f worldPosition();
-	nv_math::vec4f worldPosition(nv_math::vec4f &inPosition);
+	nvmath::vec4f worldPosition();
+	nvmath::vec4f worldPosition(nvmath::vec4f &inPosition);
 
 	Node *newChild();
 	Node *newChild(const ID &inID);
@@ -116,9 +116,9 @@ protected:
 	NodeList m_child_nodes;
 	Renderable::List m_renderables;
 
-	nv_math::vec3f m_position;
-	nv_math::vec3f m_rotation;
-	nv_math::vec3f m_scale;
+	nvmath::vec3f m_position;
+	nvmath::vec3f m_rotation;
+	nvmath::vec3f m_scale;
 
 	bool m_transform_needs_update;
 

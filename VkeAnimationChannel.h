@@ -41,13 +41,13 @@ public:
 	m_parent(inParent){}
 	~VkeAnimationChannel(){}
 
-    nv_math::vec4f currentValue();
+    nvmath::vec4f currentValue();
 
-	nv_math::quatf currentQuatValue();
+	nvmath::quatf currentQuatValue();
 
 	VkeAnimationKey::List &Keys();
 
-	VkeAnimationKey *newKey(double &inTime, nv_math::vec4f &inData);
+	VkeAnimationKey *newKey(double &inTime, nvmath::vec4f &inData);
 
 	double &getDuration();
 

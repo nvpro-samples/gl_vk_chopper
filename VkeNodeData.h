@@ -38,10 +38,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 typedef struct _VkeNodeUniform{
-	nv_math::mat4f view_matrix;
-	nv_math::mat4f normal_matrix;
-	nv_math::vec4i lookup;
-	nv_math::vec4f p1[3];
+	nvmath::mat4f view_matrix;
+	nvmath::mat4f normal_matrix;
+	nvmath::vec4i lookup;
+	nvmath::vec4f p1[3];
 } VkeNodeUniform;
 
 

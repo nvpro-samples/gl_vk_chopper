@@ -22,9 +22,8 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
 
-in VS_OUT{
+layout(location=0) in VS_OUT{
 	vec4 pos;
 	vec3 uv;
 } vs_in;

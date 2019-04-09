@@ -65,35 +65,6 @@ VkDescriptorPool &VkeRenderer::getDescriptorPool(){
 	return m_descriptor_pool;
 }
 
-VkShaderModule VkeRenderer::createVKShader(nv_helpers_gl::ProgramManager &inProgramManager, nv_helpers_gl::ProgramManager::ProgramID &inID, GLenum inStage){
-	VulkanDC *dc = VulkanDC::Get();
-	VulkanDC::Device *device = dc->getDefaultDevice();
-	const nv_helpers_gl::ProgramManager::Program &pgm = inProgramManager.getProgram(inID);
-	uint32_t sz = pgm.definitions.size();
-	for (uint32_t i = 0; i < sz; ++i){
-		if (pgm.definitions[i].type != inStage) continue;
-
-		VkResult rslt;
-		VkShaderModuleCreateInfo shaderModuleInfo;
-		memset(&shaderModuleInfo, 0, sizeof(shaderModuleInfo));
-		shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-
-		shaderModuleInfo.codeSize = pgm.definitions[i].content.size();
-		shaderModuleInfo.pCode = (const uint32_t*)pgm.definitions[i].content.c_str();
-		
-		VkShaderModule shaderModule;
-
-		rslt = vkCreateShaderModule(device->getVKDevice(), &shaderModuleInfo, NULL, &shaderModule);
-
-		if (rslt != VK_SUCCESS){
-			return VK_NULL_HANDLE;
-		}
-		return shaderModule;
-
-	}
-	return VK_NULL_HANDLE;
-}
-
 void VkeRenderer::resize(uint32_t inWidth, uint32_t inHeight){
 	initFramebuffer(inWidth, inHeight);
 	initDescriptors();

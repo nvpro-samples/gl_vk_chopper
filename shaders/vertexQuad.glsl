@@ -22,7 +22,7 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
+
 struct SceneData{
 	mat4 view_matrix;
 };
@@ -45,7 +45,7 @@ layout(std140, binding = 2) uniform cameraBuffer{
 in layout(location = 0) vec4 pos;
 in layout(location = 1) vec2 uv;
 
-out VS_OUT{
+layout(location=0) out VS_OUT{
 	vec4 pos;
 	vec3 uv;
 } vs_out;

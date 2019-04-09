@@ -24,6 +24,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
+#include <include_gl.h>
+
 #include "VkeGameRendererDynamic.h"
 #include "VkeCamera.h"
 #include"VulkanAppContext.h"
@@ -31,7 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"VkeMaterial.h"
 #include"VkeVBO.h"
 #include"VkeIBO.h"
-#include<main.h>
 #include<algorithm>
 #ifndef INIT_COMMAND_ID
 #define INIT_COMMAND_ID 1
@@ -341,15 +342,15 @@ void vkeGameRendererDynamic::initRenderer(){
 	m_is_first_frame = true;
 
 
-	nv_math::vec3f table[128][128];
+	nvmath::vec3f table[128][128];
 
 	for (int v = 0; v < 128; ++v){
 		for (int u = 0; u < 128; ++u){
 
-			nv_math::vec2f vctr(quickRandomUVD(), quickRandomUVD());
-			vctr = nv_math::normalize(vctr);
+			nvmath::vec2f vctr(quickRandomUVD(), quickRandomUVD());
+			vctr = nvmath::normalize(vctr);
 
-			table[u][v] = nv_math::vec3f(vctr.x, vctr.y, vctr.x);
+			table[u][v] = nvmath::vec3f(vctr.x, vctr.y, vctr.x);
 		}
 	}
 
@@ -365,8 +366,8 @@ void vkeGameRendererDynamic::initRenderer(){
 
 	for (uint32_t i = 0; i < m_instance_count; ++i){
 
-		nv_math::vec2f initPos(quickRandomUVD()*100.0, -200 + (quickRandomUVD() * 20));
-		nv_math::vec2f endPos(quickRandomUVD()*100.0, 200 + (quickRandomUVD() * 20));
+		nvmath::vec2f initPos(quickRandomUVD()*100.0, -200 + (quickRandomUVD() * 20));
+		nvmath::vec2f endPos(quickRandomUVD()*100.0, 200 + (quickRandomUVD() * 20));
 		m_flight_paths[i] = new FlightPath(initPos, endPos, quickRandomUVD() * 0.5 + 0.5, quickRandomUVD() * 4 + 10);
 
 	}
@@ -482,14 +483,14 @@ void vkeGameRendererDynamic::update(){
 	uint32_t sz = (sizeof(VkeNodeUniform) * cnt) + (m_instance_count * 64);
 	static bool ismapped(false);
 
-	nv_math::mat4f tempMatrix;
+	nvmath::mat4f tempMatrix;
 	const float r2d = 180 / (3.14159265359);
 	static float xTheta(0.0f);
 
 
 	for (uint32_t i = 0; i < m_instance_count; ++i){
 		size_t pointerOffset = (sizeof(VkeNodeUniform) * cnt) + (64 * i);
-		nv_math::mat4f *matPtr = (nv_math::mat4f*)(((uint8_t*)m_uniforms_local) + pointerOffset);
+		nvmath::mat4f *matPtr = (nvmath::mat4f*)(((uint8_t*)m_uniforms_local) + pointerOffset);
 		m_flight_paths[i]->update(matPtr, sTime);
 	}
 
@@ -1195,7 +1196,7 @@ void vkeGameRendererDynamic::initTerrainCommand(){
 }
 
 void vkeGameRendererDynamic::initCamera(){
-	nv_math::vec4f zp(0.0, 0.0, 0.0, 1.0);
+	nvmath::vec4f zp(0.0, 0.0, 0.0, 1.0);
 
 	m_camera = new VkeCamera(1, -20.0, -1.0, -8.0);
 	m_camera->lookAt(zp);
@@ -1319,19 +1320,20 @@ void vkeGameRendererDynamic::generateDrawCommands(){
 }
 
 
-void vkeGameRendererDynamic::initShaders(nv_helpers_gl::ProgramManager &inProgramManager){
+void vkeGameRendererDynamic::initShaders(nvvk::ShaderModuleManager& inShaderModuleManager)
+{
 	VulkanAppContext *ctxt = VulkanAppContext::GetInstance();
 
-	m_shaders.scene_vertex = createVKShader(inProgramManager, ctxt->getProgramIDs().scene, GL_VERTEX_SHADER);
-	m_shaders.scene_fragment = createVKShader(inProgramManager, ctxt->getProgramIDs().scene, GL_FRAGMENT_SHADER);
+	m_shaders.scene_vertex   = inShaderModuleManager.get(ctxt->getModuleIDs().scene_vs);
+  m_shaders.scene_fragment = inShaderModuleManager.get(ctxt->getModuleIDs().scene_fs);
 
-	m_shaders.quad_vertex = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_quad, GL_VERTEX_SHADER);
-	m_shaders.quad_fragment = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_quad, GL_FRAGMENT_SHADER);
+  m_shaders.quad_vertex    = inShaderModuleManager.get(ctxt->getModuleIDs().scene_quad_vs);
+  m_shaders.quad_fragment  = inShaderModuleManager.get(ctxt->getModuleIDs().scene_quad_fs);
 
-	m_shaders.terrain_vertex = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_terrain, GL_VERTEX_SHADER);
-	m_shaders.terrain_fragment = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_terrain, GL_FRAGMENT_SHADER);
-	m_shaders.terrain_tcs = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_terrain, GL_TESS_CONTROL_SHADER);
-	m_shaders.terrain_tes = createVKShader(inProgramManager, ctxt->getProgramIDs().scene_terrain, GL_TESS_EVALUATION_SHADER);
+  m_shaders.terrain_vertex = inShaderModuleManager.get(ctxt->getModuleIDs().scene_terrain_vs);
+  m_shaders.terrain_fragment = inShaderModuleManager.get(ctxt->getModuleIDs().scene_terrain_fs);
+  m_shaders.terrain_tcs      = inShaderModuleManager.get(ctxt->getModuleIDs().scene_terrain_tcs);
+  m_shaders.terrain_tes      = inShaderModuleManager.get(ctxt->getModuleIDs().scene_terrain_tes);
 }
 
 
@@ -1381,6 +1383,6 @@ void vkeGameRendererDynamic::releaseFramebuffer(){
 
 }
 
-void vkeGameRendererDynamic::setCameraLookAt(nv_math::mat4f &inMat){
+void vkeGameRendererDynamic::setCameraLookAt(nvmath::mat4f &inMat){
 	m_camera->setLookAtMatrix(inMat);
 }

@@ -31,13 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include"VkeBuffer.h"
 #include"VkeVBO.h"
 #include"VkeIBO.h"
 
 typedef struct _QuadUniform{
-	nv_math::mat4f view_matrix;
+	nvmath::mat4f view_matrix;
 }QuadUniform;
 
 class VkeScreenQuad : public VkeBuffer<QuadUniform>

@@ -73,14 +73,14 @@ void VkeAnimationNode::update(){
 	Node *node = m_scene_node->getNode();
 	if (!node) return;
 
-	nv_math::vec4f curValue;
+	nvmath::vec4f curValue;
 
 	curValue = m_position.currentValue();
 
 	node->setPosition(curValue.x, curValue.y, curValue.z);
 
 
-	nv_math::quatf curQuat = m_rotation.currentQuatValue();
+	nvmath::quatf curQuat = m_rotation.currentQuatValue();
 	curQuat.to_euler_xyz(&curValue.x);
 
 	node->setRotation(curValue.x, curValue.y, curValue.z);

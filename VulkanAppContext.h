@@ -35,8 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"VkeMaterial.h"
 #include"RenderContext.h"
 #include"VkeMesh.h"
-#include<nv_math/nv_math.h>
-#include<nv_helpers_gl/programmanager_gl.hpp>
+#include<nvmath/nvmath.h>
+#include<nvvk/shadermodulemanager_vk.hpp>
 #include"VkeSceneAnimation.h"
 
 
@@ -59,27 +59,27 @@ public:
 
 	void initAppContext();
 
-	void initRenderer(nv_helpers_gl::ProgramManager &inProgramManager);
+	void initRenderer();
 
 	void loadVKSScene(std::string &inFileName);
 	void addVKSNode(VKSFile *inFile, uint32_t &inNodesProcessed, Node *parentNode = NULL);
 
 	void render();
 
-	bool initPrograms(nv_helpers_gl::ProgramManager &inProgramManager);
+	bool initPrograms();
 
 	void resize(uint32_t inWidth, uint32_t inHeight);
 	VkeMaterial *getMaterial(VkeMaterial::ID inID);
 
-	nv_math::vec4f getRotorPos(){
-        nv_math::vec4f pos(0.0f,0.0f,-1.0f,1.0f);
+	nvmath::vec4f getRotorPos(){
+        nvmath::vec4f pos(0.0f,0.0f,-1.0f,1.0f);
         return m_rotor_node->getNode()->worldPosition(pos);
 	}
 
 	VkeVBO *getVBO(){ return &m_global_vbo; }
 	VkeIBO *getIBO(){ return &m_global_ibo; }
 
-	void setCameraMatrix(nv_math::mat4f &inMat);
+	void setCameraMatrix(nvmath::mat4f &inMat);
 
 	float getOpacity(uint32_t inMatID){
 		return m_materials.getMaterial(inMatID)->getBackingStore()->opacity;
@@ -114,20 +114,24 @@ private:
 	VkeVBO							m_global_vbo;
 	VkeIBO							m_global_ibo;
 
-	
+	nvvk::ShaderModuleManager m_shaderModuleManager;
 
 
 
-	struct ProgIDs {
-		nv_helpers_gl::ProgramManager::ProgramID
-			scene,
-			scene_quad,
-			scene_terrain;
-	} m_program_ids;
+  struct ModuleIDs {
+    nvvk::ShaderModuleManager::ShaderModuleID scene_vs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_fs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_quad_vs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_quad_fs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_vs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_fs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_tcs;
+    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_tes;
+  } m_program_ids;
 
 public:
 
-	ProgIDs &getProgramIDs() { return m_program_ids; }
+	ModuleIDs &getModuleIDs() { return m_program_ids; }
 
 
 };

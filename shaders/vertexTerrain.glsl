@@ -22,7 +22,7 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
+
 struct SceneData{
 	mat4 view_matrix;
 };
@@ -45,7 +45,7 @@ layout(std140, binding = 1) uniform cameraBuffer{
 in layout(location = 0) vec4 pos;
 in layout(location = 1) vec2 uv;
 
-out VS_OUT{
+layout(location=0) out VS_OUT{
 	vec4 pos;
 	vec2 uv;
 } vs_out;
@@ -56,8 +56,8 @@ void main(){
 
 	float terrainScale = 32.0;
 
-	float offsetX = float(gl_InstanceID % sz);
-	float offsetZ = float(gl_InstanceID / sz);
+	float offsetX = float(gl_InstanceIndex % sz);
+	float offsetZ = float(gl_InstanceIndex / sz);
 
 	vec2 baseUV = vec2(1.0 /sz) * vec2(offsetX,offsetZ);
 

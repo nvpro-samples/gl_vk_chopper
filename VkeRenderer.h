@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include"VkeMesh.h"
 #include"VkeNodeData.h"
 #include<map>
-#include<nv_helpers_gl/programmanager_gl.hpp>
+#include<nvvk/shadermodulemanager_vk.hpp>
 
 #pragma once
 class VkeRenderer
@@ -69,8 +69,8 @@ public:
 	virtual void releaseFramebuffer() = 0;
 
 	virtual void present() = 0;
-	virtual void initShaders(nv_helpers_gl::ProgramManager &inProgramManager) = 0;
-	virtual void setCameraLookAt(nv_math::mat4f &inMat) = 0;
+  virtual void initShaders(nvvk::ShaderModuleManager& inShaderModuleManager) = 0;
+	virtual void setCameraLookAt(nvmath::mat4f &inMat) = 0;
 
 	VkPipeline getPipeline() {
 		return m_pipeline;
@@ -101,9 +101,7 @@ protected:
 
 	uint32_t					m_width;
 	uint32_t					m_height;
-
-	VkShaderModule createVKShader(nv_helpers_gl::ProgramManager &inProgramManager, nv_helpers_gl::ProgramManager::ProgramID &inID, GLenum inStage);
-
+  
 
 
 };

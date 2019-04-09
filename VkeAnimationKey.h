@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include<vector>
 #include<stdint.h>
 
@@ -44,7 +44,7 @@ public:
 	typedef uint32_t Count;
 
 	VkeAnimationKey(){}
-	VkeAnimationKey(double &inTime,nv_math::vec4f &inData):
+	VkeAnimationKey(double &inTime,nvmath::vec4f &inData):
 		m_time(inTime),
 		m_value(inData){
 
@@ -52,14 +52,14 @@ public:
 	~VkeAnimationKey(){}
 
 	double &getTime();
-	nv_math::vec4f &getValue();
+	nvmath::vec4f &getValue();
 
 	class List{
 	public:
 		List(){}
 		~List(){}
 
-		VkeAnimationKey *newKey(double &inTime, nv_math::vec4f &inData);
+		VkeAnimationKey *newKey(double &inTime, nvmath::vec4f &inData);
 
 		VkeAnimationKey *getKey(const ID &inID);
 
@@ -72,7 +72,7 @@ public:
 
 private:
 	
-	nv_math::vec4f m_value;
+	nvmath::vec4f m_value;
 	double m_time;
 };
 

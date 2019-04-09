@@ -22,7 +22,6 @@
 -----------------------------------------------------------------------*/
 
 #version 450 core
-#extension GL_KHR_vulkan_glsl : require
 
 layout(quads) in;
 
@@ -135,12 +134,12 @@ float perlin(vec2 inUV){
 }
 
 
-in TES_OUT{
+layout(location=0) in TES_OUT{
 	vec4 pos;
 	vec2 uv;
 } tes_in[];
 
-out FS_OUT{
+layout(location=0) out FS_OUT{
 	vec4 pos;
 	vec4 wPos;
 	vec3 nml;

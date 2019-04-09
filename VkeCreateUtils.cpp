@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory.h>
 #include <vulkan/vulkan.h>
 #include <iostream>
-#include "nv_helpers/nvprint.hpp"
+#include "nvh/nvprint.hpp"
 
 VkDevice getDefaultDevice(){
 	VulkanDC *dc = VulkanDC::Get();

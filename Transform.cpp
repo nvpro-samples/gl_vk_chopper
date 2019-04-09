@@ -49,41 +49,41 @@ void Transform::update(Transform *inParent){
 
 	m_inverse = m_transform;
 	
-	m_inverse = nv_math::invert(m_inverse);
-	m_inverse = nv_math::transpose(m_inverse);
+	m_inverse = nvmath::invert(m_inverse);
+	m_inverse = nvmath::transpose(m_inverse);
 	
 	m_inverse.a30 = 0.0;
 	m_inverse.a31 = 0.0;
 	m_inverse.a32 = 0.0;
 }
 
-void Transform::translate(nv_math::vec4f &inPosition){
-	nv_math::vec3f vec = nv_math::vec3f(inPosition);
+void Transform::translate(nvmath::vec4f &inPosition){
+	nvmath::vec3f vec = nvmath::vec3f(inPosition);
 	m_matrix.translate(vec);
 }
 
 void Transform::translate(float inX, float inY, float inZ){
-	nv_math::vec3f vec = nv_math::vec3f(inX,inY,inZ);
+	nvmath::vec3f vec = nvmath::vec3f(inX,inY,inZ);
 	m_matrix.translate(vec);
 }
 
-void Transform::rotate(const float inValue,  nv_math::vec3f &inBasis){
+void Transform::rotate(const float inValue,  nvmath::vec3f &inBasis){
 
 
 	m_matrix.rotate(inValue, inBasis);
 }
 
-void Transform::rotate(nv_math::quatf &inQuat){
+void Transform::rotate(nvmath::quatf &inQuat){
 
 	m_matrix.rotate(inQuat);
 }
 
-void Transform::scale(const nv_math::vec3f &inScale){
+void Transform::scale(const nvmath::vec3f &inScale){
 	m_matrix.scale(inScale);
 }   
 
 void Transform::scale(const float inX, const float inY, const float inZ){
-	scale(nv_math::vec3f(inX, inY, inZ));
+	scale(nvmath::vec3f(inX, inY, inZ));
 }
 
 

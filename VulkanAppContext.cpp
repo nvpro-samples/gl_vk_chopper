@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include<string>
 
+#include"nvpwindow.hpp"
 
 #include"VkeCreateUtils.h"
 #include"VkeRenderer.h"
@@ -40,7 +41,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include"VulkanDeviceContext.h"
 #include<iostream>
-#include<main.h>
 #ifndef INIT_COMMAND_ID
 #define INIT_COMMAND_ID 1
 #endif
@@ -227,7 +227,7 @@ void VulkanAppContext::addVKSNode(VKSFile *inFile, uint32_t &inNodesProcessed, N
 }
 
 
-void VulkanAppContext::initRenderer(nv_helpers_gl::ProgramManager &inProgramManager){
+void VulkanAppContext::initRenderer(){
 
     RenderContext *rctxt = RenderContext::Get();
     if (!rctxt) return;
@@ -258,7 +258,7 @@ void VulkanAppContext::initRenderer(nv_helpers_gl::ProgramManager &inProgramMana
 	((RENDERER*)m_renderer)->setNodeData(&m_node_data);
 	((RENDERER*)m_renderer)->setMaterialData(&m_materials);
 	((RENDERER*)m_renderer)->initIndirectCommands();
-	m_renderer->initShaders(inProgramManager);
+	m_renderer->initShaders(m_shaderModuleManager);
 
 	m_renderer->initLayouts();
 
@@ -357,37 +357,42 @@ VulkanAppContext::~VulkanAppContext()
 }
 
 
-bool VulkanAppContext::initPrograms(nv_helpers_gl::ProgramManager &inProgramManager){
+bool VulkanAppContext::initPrograms()
+{
 
-	inProgramManager.m_preprocessOnly = true;
-
+  m_shaderModuleManager.init(VulkanDC::Get()->getDevice()->getVKDevice());
 	/*
 		Initialise the shaders used for the demo.
 	*/
-    inProgramManager.addDirectory(std::string("./GLSL_" PROJECT_NAME));
-	inProgramManager.addDirectory(std::string(PROJECT_NAME) + std::string("shaders"));
-	inProgramManager.addDirectory(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("shaders") );
+  m_shaderModuleManager.addDirectory(std::string("./GLSL_" PROJECT_NAME));
+  m_shaderModuleManager.addDirectory(std::string(PROJECT_NAME) + std::string("shaders"));
+  m_shaderModuleManager.addDirectory(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("shaders"));
 	//inProgramManager.addDirectory(std::string(PROJECT_ABSDIRECTORY));
 
-	m_program_ids.scene = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "std_vertex.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "std_fragment.glsl"));
+	m_program_ids.scene_vs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "std_vertex.glsl"));
+  m_program_ids.scene_fs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "std_fragment.glsl"));
 
-	m_program_ids.scene_quad = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "vertexQuad.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "fragmentQuad.glsl"));
+  m_program_ids.scene_quad_vs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "vertexQuad.glsl"));
+  m_program_ids.scene_quad_fs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentQuad.glsl"));
 
-	m_program_ids.scene_terrain = inProgramManager.createProgram(
-		nv_helpers_gl::ProgramManager::Definition(GL_VERTEX_SHADER, "vertexTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_FRAGMENT_SHADER, "fragmentTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_TESS_CONTROL_SHADER, "tcsTerrain.glsl"),
-		nv_helpers_gl::ProgramManager::Definition(GL_TESS_EVALUATION_SHADER, "tesTerrain.glsl")
-		);
+  m_program_ids.scene_terrain_vs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "vertexTerrain.glsl"));
+  m_program_ids.scene_terrain_fs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentTerrain.glsl"));
+  m_program_ids.scene_terrain_tcs = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, "tcsTerrain.glsl"));
+  m_program_ids.scene_terrain_tes = m_shaderModuleManager.createShaderModule(
+      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, "tesTerrain.glsl"));
+
 
 	/*
 		Check that the programs are valid.
 	*/
-    bool bRes = inProgramManager.areProgramsValid();
+  bool bRes = m_shaderModuleManager.areShaderModulesValid();
     if(bRes) { LOGOK("GLSL programs validated\n") }
     else     { LOGE("GLSL programs validation failed\n") }
 	return bRes;
@@ -398,7 +403,7 @@ VkeMaterial *VulkanAppContext::getMaterial(VkeMaterial::ID inID){
 
 }
 
-void VulkanAppContext::setCameraMatrix(nv_math::mat4f &inMat){
+void VulkanAppContext::setCameraMatrix(nvmath::mat4f &inMat){
 	((RENDERER*)m_renderer)->setCameraLookAt(inMat);
 
 }

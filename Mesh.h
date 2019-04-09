@@ -56,8 +56,8 @@ public:
 	void addVertex(const Vec4f &inVertex, const Vec4f &inNormal);
 	void addIndex(const uint32_t &inIndex);
 
-	Triangle4f &getTriangle(const uint32_t inIndex);
-	Triangle4f &getTransformedTriangle(Mat4x4f &inTransform, const uint32_t inIndex);
+	Triangle4f getTriangle(const uint32_t inIndex);
+	Triangle4f getTransformedTriangle(Mat4x4f &inTransform, const uint32_t inIndex);
 
 	uint32_t getVertexCount(){ return m_vertex_count; }
 	uint32_t getIndexCount(){ return m_index_count; }

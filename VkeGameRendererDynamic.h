@@ -48,11 +48,11 @@ const float r2d = 180 / (3.14159265359);
 
 struct FlightPath{
 
-	nv_math::vec2f m_start_position;
-	nv_math::vec2f m_end_position;
-	nv_math::vec2f m_position;
-	nv_math::vec2f m_direction;
-	nv_math::vec2f m_range;
+	nvmath::vec2f m_start_position;
+	nvmath::vec2f m_end_position;
+	nvmath::vec2f m_position;
+	nvmath::vec2f m_direction;
+	nvmath::vec2f m_range;
 	float m_t;
 
 	float m_velocity;
@@ -69,8 +69,8 @@ struct FlightPath{
 	}
 
 	FlightPath(
-		nv_math::vec2f &initialPosition,
-		nv_math::vec2f &endPosition,
+		nvmath::vec2f &initialPosition,
+		nvmath::vec2f &endPosition,
 		float startT = 0.0, 
 		float inAltitude = 10,
 		float inVelocity = 0.001):
@@ -88,24 +88,24 @@ struct FlightPath{
 
 	~FlightPath(){}
 
-	void update(nv_math::mat4f *inMat, float inT){
+	void update(nvmath::mat4f *inMat, float inT){
 
 		m_t += (m_velocity);
 		if (m_t >= 1.0) m_t = 0.0;
 
 		m_position = (m_range * m_t) + m_start_position;
-		m_direction = nv_math::normalize(m_range);
+		m_direction = nvmath::normalize(m_range);
 
 		float yRot = atan2(m_range.x, m_range.y);
 
-		nv_math::mat4f rotMat;
+		nvmath::mat4f rotMat;
 		rotMat.identity();
-		rotMat.translate(nv_math::vec3f(m_position.x, m_altitude, m_position.y));
+		rotMat.translate(nvmath::vec3f(m_position.x, m_altitude, m_position.y));
 
 
 		inMat->identity();
-		inMat->rotate(yRot, nv_math::vec3f(0.0, 1.0, 0.0));
-		inMat->rotate(-90 / r2d, nv_math::vec3f(1.0, 0.0, 0.0));
+		inMat->rotate(yRot, nvmath::vec3f(0.0, 1.0, 0.0));
+		inMat->rotate(-90 / r2d, nvmath::vec3f(1.0, 0.0, 0.0));
 		*inMat = rotMat * (*inMat);
 
 	}
@@ -134,7 +134,7 @@ private:
 	VkCommandBuffer m_draw_command[COMMAND_BUFFER_COUNT];
 	VkCommandPool m_command_pool;
 
-	nv_math::mat4f m_draw_transform;
+	nvmath::mat4f m_draw_transform;
 
 	bool m_buffer_ready;
 
@@ -170,8 +170,8 @@ public:
 	virtual void update();
 
 	virtual void present();
-	virtual void initShaders(nv_helpers_gl::ProgramManager &inProgramManager);
-	virtual void setCameraLookAt(nv_math::mat4f &inMat);
+  virtual void initShaders(nvvk::ShaderModuleManager& inShaderModuleManager);
+	virtual void setCameraLookAt(nvmath::mat4f &inMat);
 
 	VkDescriptorSet getSceneDescriptorSet(){
 		return m_scene_descriptor_set;

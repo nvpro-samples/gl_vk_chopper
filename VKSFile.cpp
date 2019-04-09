@@ -25,9 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #include "VKSFile.h"
-#include "nv_helpers/nvprint.hpp"
+#include "nvh/nvprint.hpp"
+#include "nvpwindow.hpp"
 #include <iostream>
-#include <main.h>
 
 #if defined(WIN32)
 #else

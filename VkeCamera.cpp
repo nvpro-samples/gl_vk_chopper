@@ -100,7 +100,7 @@ void VkeCamera::updateProjection(){
 	if (!m_projection_needs_update) return;
 	m_aspect = m_viewport.z / m_viewport.w;
 
-	m_projection = nv_math::perspective(m_fov,m_aspect,m_near,m_far);
+	m_projection = nvmath::perspective(m_fov,m_aspect,m_near,m_far);
 
 	m_projection_needs_update = false;
 	m_view_projection_needs_update = true;
@@ -113,10 +113,10 @@ void VkeCamera::updateTransform(){
 
 	if (!m_use_look_at){
 
-        nv_math::vec4f tra = nv_math::vec4f(m_position,1.0);
-        nv_math::vec3f fwd(0.0,0.0,1.0);
-        nv_math::vec3f up(0.0,0.0,0.0);
-        nv_math::vec3f lft(0.0,0.0,0.0);
+        nvmath::vec4f tra = nvmath::vec4f(m_position,1.0);
+        nvmath::vec3f fwd(0.0,0.0,1.0);
+        nvmath::vec3f up(0.0,0.0,0.0);
+        nvmath::vec3f lft(0.0,0.0,0.0);
         m_transform.translate(tra);
         m_transform.rotate(m_rotation.z, fwd);
         m_transform.rotate(m_rotation.y, up);
@@ -137,7 +137,7 @@ void VkeCamera::updateViewProjection(){
 
 	m_backing_store->view_proj_matrix = m_projection;
 	m_backing_store->view_proj_matrix *= m_transform.getTransform();
-	m_backing_store->view_matrix = nv_math::invert(m_transform.getTransform());
+	m_backing_store->view_matrix = nvmath::invert(m_transform.getTransform());
 
 	m_backing_store->view_matrix.a03 = 0.0;
 	m_backing_store->view_matrix.a13 = 0.0;
@@ -145,7 +145,7 @@ void VkeCamera::updateViewProjection(){
 
 	m_time += 0.01;
 
-	m_backing_store->camera_position = nv_math::vec4f(m_position,m_time);
+	m_backing_store->camera_position = nvmath::vec4f(m_position,m_time);
 
 	m_view_projection_needs_update = false;
 }
@@ -190,8 +190,8 @@ void VkeCamera::setRotation(float inX, float inY, float inZ){
 	m_transform_needs_update = true;
 }
 
-void VkeCamera::setRotation(nv_math::quatf &inQuat){
-	nv_math::vec3f angles;
+void VkeCamera::setRotation(nvmath::quatf &inQuat){
+	nvmath::vec3f angles;
 	inQuat.to_euler_xyz(angles);
 	setRotation(angles.x, angles.y, angles.z);
 
@@ -225,32 +225,32 @@ float VkeCamera::getFOV(){
 	return m_fov;
 }
 
-nv_math::vec4f VkeCamera::worldPosition(){
-    nv_math::vec4f zero(0.0,0.0,0.0,1.0);
+nvmath::vec4f VkeCamera::worldPosition(){
+    nvmath::vec4f zero(0.0,0.0,0.0,1.0);
     return worldPosition(zero);
 }
 
-nv_math::vec4f VkeCamera::worldPosition(nv_math::vec4f &inPosition){
+nvmath::vec4f VkeCamera::worldPosition(nvmath::vec4f &inPosition){
 	return m_transform(inPosition);
 }
 
-void VkeCamera::lookAt(nv_math::vec4f &inPos){
+void VkeCamera::lookAt(nvmath::vec4f &inPos){
 	m_use_look_at = true;
-	nv_math::mat4f camView;
+	nvmath::mat4f camView;
 	m_look_at_matrix.identity();
 
 	
 
-	m_look_at_matrix = nv_math::look_at(nv_math::vec3f(inPos) - m_position, nv_math::vec3f(inPos), nv_math::vec3f(0, 1, 0));
-    nv_math::vec3f zro(0.0f);
+	m_look_at_matrix = nvmath::look_at(nvmath::vec3f(inPos) - m_position, nvmath::vec3f(inPos), nvmath::vec3f(0, 1, 0));
+    nvmath::vec3f zro(0.0f);
     m_position = m_look_at_matrix.get_translation(zro);
 
 
 }
 
-void VkeCamera::setLookAtMatrix(nv_math::mat4f &inMat){
+void VkeCamera::setLookAtMatrix(nvmath::mat4f &inMat){
 	m_look_at_matrix = inMat;
-	nv_math::mat4f inv = nv_math::invert(inMat);
+	nvmath::mat4f inv = nvmath::invert(inMat);
 	m_position.x = inv.a03;
 	m_position.y = inv.a13;
 	m_position.z = inv.a23;

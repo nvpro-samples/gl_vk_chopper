@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include<string>
 #include"WMath.h"
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 
 
 namespace meshimport{
@@ -66,9 +66,9 @@ namespace meshimport{
 	};
 
 	struct MaterialDataf{
-		nv_math::vec4f diffuseColor;
-		nv_math::vec4f ambientColor;
-		nv_math::vec4f specularColor;
+		nvmath::vec4f diffuseColor;
+		nvmath::vec4f ambientColor;
+		nvmath::vec4f specularColor;
 		float opacity;
 		float shininess;
 		float reflectivity;
@@ -83,7 +83,7 @@ namespace meshimport{
 	};
 
 	struct NodeAnimationKeyf{
-		nv_math::vec4f data;
+		nvmath::vec4f data;
 		double time;
 	};
 
@@ -122,9 +122,9 @@ namespace meshimport{
 
 	struct OutputNodeDataf{
 		OutputMeshIndexDataf meshData;
-		nv_math::vec3f position;
-		nv_math::vec3f scale;
-		nv_math::quatf rotation;
+		nvmath::vec3f position;
+		nvmath::vec3f scale;
+		nvmath::quatf rotation;
 
 		std::string name;
 

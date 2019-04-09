@@ -24,311 +24,293 @@
 -----------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#define DEBUG_FILTER     1
+#define DEBUG_FILTER 1
 
 #include <include_gl.h>
 
-#include <nv_math/nv_math_glsltypes.h>
+#include <nvmath/nvmath_glsltypes.h>
 
-#include <nv_helpers/geometry.hpp>
-#include <nv_helpers/misc.hpp>
-#include <nv_helpers/cameracontrol.hpp>
-#include <nv_helpers/tnulled.hpp>
+#include <nvh/cameracontrol.hpp>
+#include <nvh/geometry.hpp>
+#include <nvh/misc.hpp>
+#include <nvh/tnulled.hpp>
 
-#include <nv_helpers_gl/appwindowprofiler_gl.hpp>
-#include <nv_helpers_gl/error_gl.hpp>
-#include <nv_helpers_gl/programmanager_gl.hpp>
-#include <nv_helpers_gl/base_gl.hpp>
+#include <nvgl/appwindowprofiler_gl.hpp>
+#include <nvgl/base_gl.hpp>
+#include <nvgl/error_gl.hpp>
 
 
+
+#include <iostream>
 #include <noise/mersennetwister1.h>
 #include <stdint.h>
-#include<iostream>
 
 
-#include"VulkanDeviceContext.h"
-#include"VulkanAppContext.h"
+#include "VulkanAppContext.h"
+#include "VulkanDeviceContext.h"
 
-using namespace nv_helpers;
-using namespace nv_helpers_gl;
-using namespace nv_math;
+using namespace nvh;
+using namespace nvgl;
+using namespace nvmath;
 
 
 extern bool vulkanInitLibrary();
 
-namespace pathclipping
+namespace pathclipping {
+int const SAMPLE_SIZE_WIDTH(1024);
+int const SAMPLE_SIZE_HEIGHT(768);
+int const SAMPLE_MAJOR_VERSION(4);
+int const SAMPLE_MINOR_VERSION(5);
+
+int const PERLIN_GRID_U_SIZE(128);
+int const PERLIN_GRID_V_SIZE(128);
+
+
+class Sample;
+
+
+class Sample : public nvgl::AppWindowProfilerGL
 {
-  int const SAMPLE_SIZE_WIDTH(1024);
-  int const SAMPLE_SIZE_HEIGHT(768);
-  int const SAMPLE_MAJOR_VERSION(4);
-  int const SAMPLE_MINOR_VERSION(5);
-
-  int const PERLIN_GRID_U_SIZE(128);
-  int const PERLIN_GRID_V_SIZE(128);
-
-
-
-  class Sample;
-
- 
-  class Sample : public nv_helpers_gl::AppWindowProfilerGL
-  {
-    ProgramManager progManager;
-
   CameraControl m_control;
 
 
-  void end(){
-   // TwTerminate();
-  }
-  
-  bool mouse_pos(int x,int y){
-	  return false;// !!TwEventMousePosGLFW(x, y);
+  void end()
+  {
+    // TwTerminate();
   }
 
-  bool mouse_button(int button, int action){
-	  return false;// !!TwEventMouseButtonGLFW(button, action);
+  bool mouse_pos(int x, int y)
+  {
+    return false;  // !!TwEventMousePosGLFW(x, y);
   }
 
-  bool mouse_wheel(int wheel){
-	  return false;// !!TwEventMouseWheelGLFW(wheel);
+  bool mouse_button(int button, int action)
+  {
+    return false;  // !!TwEventMouseButtonGLFW(button, action);
   }
 
-  bool key_button(int button, int action, int mods){
-	  return false;// handleTwKeyPressed(button, action, mods);
+  bool mouse_wheel(int wheel)
+  {
+    return false;  // !!TwEventMouseWheelGLFW(wheel);
   }
 
-  struct Tweak{
-    Tweak():
-      samples(1),
-      curFile(0),
-	  cmdBufferMode(0),
-	  drawReflections(true),
-	  drawShadows(false),
-	  playAnimation(true),
-      drawClips(false){}
+  bool key_button(int button, int action, int mods)
+  {
+    return false;  // handleTwKeyPressed(button, action, mods);
+  }
 
-    int samples;
-	int cmdBufferMode;
-    int curFile;
+  struct Tweak
+  {
+    Tweak()
+        : samples(1)
+        , curFile(0)
+        , cmdBufferMode(0)
+        , drawReflections(true)
+        , drawShadows(false)
+        , playAnimation(true)
+        , drawClips(false)
+    {
+    }
+
+    int  samples;
+    int  cmdBufferMode;
+    int  curFile;
     bool drawClips;
-	bool drawReflections;
-	bool drawShadows;
-	bool playAnimation;
-
+    bool drawReflections;
+    bool drawShadows;
+    bool playAnimation;
   };
 
   Tweak tweak;
   Tweak tweakLast;
 
-	struct {
-		GLuint
-			scene;
-	} fbos;
-
-	struct {
-		GLuint
-			scene_color,
-			scene_depthstencil;
-	} textures;
-
-	struct {
-		ProgramManager::ProgramID
-			draw_quad;
-
-	} programs;
-
-    bool begin();
-    void think(double time);
-    void resize(int width, int height);
-
-    bool initProgram();
-    bool initVulkan();
-    bool initScene();
-    bool initMisc();
-	
-	bool initFramebuffers(int width, int height, int samples);
-	public:
-  };
-
-
-  bool Sample::initProgram()
+  struct
   {
-   //No programs used for this demo.
+    GLuint scene;
+  } fbos;
 
-	  bool validated(true);
+  struct
+  {
+    GLuint scene_color, scene_depthstencil;
+  } textures;
 
-	  /*
+
+  bool begin();
+  void think(double time);
+  void resize(int width, int height);
+
+  bool initProgram();
+  bool initVulkan();
+  bool initScene();
+  bool initMisc();
+
+  bool initFramebuffers(int width, int height, int samples);
+
+public:
+};
+
+
+bool Sample::initProgram()
+{
+  //No programs used for this demo.
+
+  bool validated(true);
+
+  /*
 		Programs for Gazelle are managed by the App Context.
 		Just return true here.
 	  */
-    return true;
-  }
+  return true;
+}
 
-  bool Sample::initVulkan(){
+bool Sample::initVulkan()
+{
 
-	  bool vulkanReady = true;// vulkanInitLibrary();
+  bool vulkanReady = true;  // vulkanInitLibrary();
 
-	 /*
-		Get and initialise the VulkanAppContext.
+  /*
+  	Get and initialise the VulkanAppContext.
 	 */
-     VulkanAppContext *ctxt = VulkanAppContext::GetInstance();
-     ctxt->initAppContext();
-	 /*
+  VulkanAppContext* ctxt = VulkanAppContext::GetInstance();
+  ctxt->initAppContext();
+  /*
 		Load the programs
 	 */
-	 bool progsValid = ctxt->initPrograms(progManager);
-	 /*
+  bool progsValid = ctxt->initPrograms();
+  /*
 		Initialise the renderer.
 	 */
-	 ctxt->initRenderer(progManager);
+  ctxt->initRenderer();
 
-     return vulkanReady;
+  return vulkanReady;
+}
+
+bool Sample::initMisc()
+{
+  return true;
+}
+
+
+bool Sample::initScene()
+{
+
+  return true;
+}
+
+bool Sample::initFramebuffers(int width, int height, int samples)
+{
+
+  if(samples > 1)
+  {
+    newTexture(textures.scene_color, GL_TEXTURE_2D_MULTISAMPLE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
+    glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_FALSE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+    newTexture(textures.scene_depthstencil, GL_TEXTURE_2D_MULTISAMPLE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
+    glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH24_STENCIL8, width, height, GL_FALSE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+  }
+  else
+  {
+    newTexture(textures.scene_color, GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textures.scene_color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    newTexture(textures.scene_depthstencil, GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textures.scene_depthstencil);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
+    glBindTexture(GL_TEXTURE_2D, 0);
   }
 
-  bool Sample::initMisc()
-  {
-    return true;
-  }
+  newFramebuffer(fbos.scene);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textures.scene_color, 0);
+  // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, textures.scene_depthstencil, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
- 
-  bool Sample::initScene()
-  {
-   
-    return true;
-  }
-
-  bool Sample::initFramebuffers(int width, int height, int samples)
-  {
-
-    if (samples > 1){
-      newTexture(textures.scene_color, GL_TEXTURE_2D_MULTISAMPLE);
-      glBindTexture (GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
-      glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_FALSE);
-      glBindTexture (GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-      newTexture(textures.scene_depthstencil, GL_TEXTURE_2D_MULTISAMPLE);
-      glBindTexture (GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
-      glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH24_STENCIL8, width, height, GL_FALSE);
-      glBindTexture (GL_TEXTURE_2D_MULTISAMPLE, 0);
-    }
-    else
-    {
-      newTexture(textures.scene_color, GL_TEXTURE_2D);
-      glBindTexture (GL_TEXTURE_2D, textures.scene_color);
-      glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-      glBindTexture (GL_TEXTURE_2D, 0);
-
-      newTexture(textures.scene_depthstencil, GL_TEXTURE_2D);
-      glBindTexture (GL_TEXTURE_2D, textures.scene_depthstencil);
-      glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
-      glBindTexture (GL_TEXTURE_2D, 0);
-    }
-
-    newFramebuffer(fbos.scene);
-    glBindFramebuffer(GL_FRAMEBUFFER,     fbos.scene);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,        textures.scene_color, 0);
-   // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, textures.scene_depthstencil, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return true;
-  }
+  return true;
+}
 
 
-  bool Sample::begin()
-  {
+bool Sample::begin()
+{
 
 
-   // TwInit(TW_OPENGL_CORE,NULL);
-   // TwWindowSize(m_window.m_viewsize[0], m_window.m_viewsize[1]);
-    
+  // TwInit(TW_OPENGL_CORE,NULL);
+  // TwWindowSize(m_windowState.m_viewsize[0], m_windowState.m_viewsize[1]);
+
   //  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
 
-    bool validated(true);
+  bool validated(true);
 
-    validated = validated && initMisc();
-    validated = validated && initScene();
-    validated = validated && initFramebuffers(m_window.m_viewsize[0],m_window.m_viewsize[1],8);
+  validated = validated && initMisc();
+  validated = validated && initScene();
+  validated = validated && initFramebuffers(m_windowState.m_viewSize[0], m_windowState.m_viewSize[1], 8);
 
-	initVulkan();
+  initVulkan();
 
-    m_control.m_sceneOrbit = vec3(0.0f);
-    m_control.m_sceneDimension = float(1.0);
-	nv_math::vec3f scenePos = nv_math::vec3f(20.0, -1.0, 8.0);
+  m_control.m_sceneOrbit     = vec3(0.0f);
+  m_control.m_sceneDimension = float(1.0);
+  nvmath::vec3f scenePos     = nvmath::vec3f(20.0, -1.0, 8.0);
 
-	m_control.m_viewMatrix = nv_math::look_at(m_control.m_sceneOrbit - (scenePos* m_control.m_sceneDimension*0.5f), m_control.m_sceneOrbit, vec3(0, 1, 0));
-  
-	
-	return validated;
-  }
+  m_control.m_viewMatrix = nvmath::look_at(m_control.m_sceneOrbit - (scenePos * m_control.m_sceneDimension * 0.5f),
+                                           m_control.m_sceneOrbit, vec3(0, 1, 0));
 
 
-  void Sample::think(double time)
+  return validated;
+}
+
+
+void Sample::think(double time)
+{
+
+  m_control.processActions(m_windowState.m_viewSize,
+                           nvmath::vec2f(m_windowState.m_mouseCurrent[0], m_windowState.m_mouseCurrent[1]),
+                           m_windowState.m_mouseButtonFlags, m_windowState.m_mouseWheel);
+
+
+  int width  = m_windowState.m_viewSize[0];
+  int height = m_windowState.m_viewSize[1];
+
+  VulkanAppContext* ctxt = VulkanAppContext::GetInstance();
+  ctxt->setCameraMatrix(m_control.m_viewMatrix);
+
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
   {
-    
-    m_control.processActions(m_window.m_viewsize, nv_math::vec2f(m_window.m_mouseCurrent[0], m_window.m_mouseCurrent[1]), m_window.m_mouseButtonFlags, m_window.m_wheel);
-    
-    if (m_window.onPress(KEY_R)){
-      progManager.reloadPrograms();
-    }
-    if (!progManager.areProgramsValid()){
-      waitEvents();
-      return;
-    }
-
-    int width   = m_window.m_viewsize[0];
-    int height  = m_window.m_viewsize[1];
-
-	VulkanAppContext *ctxt = VulkanAppContext::GetInstance();
-	ctxt->setCameraMatrix(m_control.m_viewMatrix);
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    {
-      NV_PROFILE_SECTION("Scene");
-     // glViewport(0, 0, width, height);
-
-	  ctxt->render();
-		
-    }
-  
-
-   }
-
-
-  void Sample::resize(int width, int height)
-  {
-    VulkanDC *dc = VulkanDC::Get();
-    VulkanDC::Device *device = dc->getDefaultDevice();
-    VulkanAppContext *ctxt = VulkanAppContext::GetInstance();
-    device->waitIdle();
-    initFramebuffers(width,height,1);
-    ctxt->render();
-    device->waitIdle();
-    ctxt->resize(width, height);
-    device->waitIdle();
     ctxt->render();
   }
 }
+
+
+void Sample::resize(int width, int height)
+{
+  VulkanDC*         dc     = VulkanDC::Get();
+  VulkanDC::Device* device = dc->getDefaultDevice();
+  VulkanAppContext* ctxt   = VulkanAppContext::GetInstance();
+  device->waitIdle();
+  initFramebuffers(width, height, 1);
+  ctxt->render();
+  device->waitIdle();
+  ctxt->resize(width, height);
+  device->waitIdle();
+  ctxt->render();
+}
+}  // namespace pathclipping
 
 using namespace pathclipping;
 
-int sample_main(int argc, const char** argv)
+int main(int argc, const char** argv)
 {
-  SETLOGFILENAME();
-  Sample sample;
+  NVPWindow::System system(argv[0], PROJECT_NAME);
+  Sample            sample;
 
-  return sample.run(
-    PROJECT_NAME,
-    argc, argv,
-    SAMPLE_SIZE_WIDTH, SAMPLE_SIZE_HEIGHT,
-    SAMPLE_MAJOR_VERSION, SAMPLE_MINOR_VERSION);
-}
-void sample_print(int level, const char * fmt)
-{
-
+  return sample.run(PROJECT_NAME, argc, argv, SAMPLE_SIZE_WIDTH, SAMPLE_SIZE_HEIGHT);
 }

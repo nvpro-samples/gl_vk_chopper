@@ -29,8 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vulkan/vulkan.h>
 #include <stdio.h>
-#include <nv_math/nv_math.h>
-#include "nv_helpers/nvprint.hpp"
+#include <nvmath/nvmath.h>
+#include "nvh/nvprint.hpp"
 
 #define VKA_CHECK_ERROR(func,msg)\
 {VkResult rslt = func;\
@@ -56,11 +56,11 @@ struct Projection {
 	float nearplane;
 	float farplane;
 	float fov;
-	nv_math::mat4f  matrix;
+	nvmath::mat4f  matrix;
 
-	nv_math::mat4f proj;
-	nv_math::vec3f position;
-	nv_math::vec3f target;
+	nvmath::mat4f proj;
+	nvmath::vec3f position;
+	nvmath::vec3f target;
 
 	Projection()
 		: nearplane(0.1f)
@@ -74,12 +74,12 @@ struct Projection {
 
 	void update(int width, int height){
 
-		nv_math::mat4f camView;
+		nvmath::mat4f camView;
 		camView.identity();
 
-		camView = nv_math::look_at(target - position, target, nv_math::vec3f(0, 1, 0));
+		camView = nvmath::look_at(target - position, target, nvmath::vec3f(0, 1, 0));
 
-		proj = nv_math::perspective(fov, float(width) / float(height), nearplane, farplane);
+		proj = nvmath::perspective(fov, float(width) / float(height), nearplane, farplane);
 
 		matrix = proj * camView;
 	}
@@ -89,7 +89,7 @@ struct ShadowProjection {
 	float nearplane;
 	float farplane;
 	float fov;
-	nv_math::mat4f  matrix;
+	nvmath::mat4f  matrix;
 
 	ShadowProjection()
 		: nearplane(0.1f)
@@ -101,13 +101,13 @@ struct ShadowProjection {
 
 	void update(int width, int height){
 
-		nv_math::mat4f camView;
+		nvmath::mat4f camView;
 		camView.identity();
-		nv_math::vec3f viewDir = nv_math::vec3f(5*1.4, 20.5*1.4, 20*1.4);
+		nvmath::vec3f viewDir = nvmath::vec3f(5*1.4, 20.5*1.4, 20*1.4);
 
-		camView = nv_math::look_at(viewDir, nv_math::vec3f(0.0, 0.0, 0.0), nv_math::vec3f(0, 1, 0));
+		camView = nvmath::look_at(viewDir, nvmath::vec3f(0.0, 0.0, 0.0), nvmath::vec3f(0, 1, 0));
 
-		matrix = nv_math::perspective(fov, float(width) / float(height), nearplane, farplane);
+		matrix = nvmath::perspective(fov, float(width) / float(height), nearplane, farplane);
 		matrix = matrix * camView;
 	}
 };
@@ -134,7 +134,7 @@ typedef struct _UBOView{
 	VkDeviceMemory memory;
 	VkBufferView view;
 	VkDescriptorBufferInfo descriptor;
-};
+} UBOView;
 
 typedef struct _TextureObject{
 	VkSampler sampler;
@@ -180,14 +180,14 @@ typedef struct _BufferData{
 } BufferData;
 
 typedef struct _UBOData{
-	nv_math::mat4f view_matrix;
-	nv_math::mat4f nml_matrix;
+	nvmath::mat4f view_matrix;
+	nvmath::mat4f nml_matrix;
 } UBOData;
 
 typedef struct _UBOCamera{
-	nv_math::mat4f proj_matrix;
-	nv_math::mat4f inv_proj_matrix;
-	nv_math::vec4f camera_position;
+	nvmath::mat4f proj_matrix;
+	nvmath::mat4f inv_proj_matrix;
+	nvmath::vec4f camera_position;
 } UBOCamera;
 
 typedef struct _UBOObject{

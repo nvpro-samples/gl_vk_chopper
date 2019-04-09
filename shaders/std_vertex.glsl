@@ -22,7 +22,6 @@
 -----------------------------------------------------------------------*/
 
 #version 440 core
-#extension GL_KHR_vulkan_glsl : require
 
 struct SceneData{
 	mat4 view_matrix;
@@ -57,7 +56,7 @@ layout(std140, set=2, binding = 0) uniform transformBuffer{
 in layout(location = 0) vec4 pos;
 in layout(location = 1) vec4 nml;
 
-out VS_OUT{
+layout(location=0) out VS_OUT{
 	vec4 pos;
 	vec4 wpos;
 	vec4 nml;

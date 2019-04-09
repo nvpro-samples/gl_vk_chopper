@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include<nv_math/nv_math.h>
+#include<nvmath/nvmath.h>
 #include"VkeBuffer.h"
 #include"Transform.h"
 #include<map>
@@ -52,9 +52,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 typedef struct _VkeCameraUniform{
-	nv_math::mat4f view_proj_matrix;
-	nv_math::mat4f view_matrix;
-	nv_math::vec4f camera_position;
+	nvmath::mat4f view_proj_matrix;
+	nvmath::mat4f view_matrix;
+	nvmath::vec4f camera_position;
 }VkeCameraUniform;
 
 class VkeCamera : public VkeBuffer<VkeCameraUniform>
@@ -104,7 +104,7 @@ public:
 
 	void setPosition(float inX, float inY, float inZ);
 	void setRotation(float inX, float inY, float inZ);
-	void setRotation(nv_math::quatf &inQuat);
+	void setRotation(nvmath::quatf &inQuat);
 
 	void setNear(float inNear);
 	void setFar(float inFar);
@@ -114,11 +114,11 @@ public:
 	float getFar();
 	float getFOV();
 
-	nv_math::vec4f worldPosition();
-	nv_math::vec4f worldPosition(nv_math::vec4f &inPosition);
+	nvmath::vec4f worldPosition();
+	nvmath::vec4f worldPosition(nvmath::vec4f &inPosition);
 
-	void lookAt(nv_math::vec4f &inPosition);
-	void setLookAtMatrix(nv_math::mat4f &inMat);
+	void lookAt(nvmath::vec4f &inPosition);
+	void setLookAtMatrix(nvmath::mat4f &inMat);
 
 private:
 
@@ -128,25 +128,25 @@ private:
 
 	ID m_id;
 
-	nv_math::vec4f m_viewport;
+	nvmath::vec4f m_viewport;
 
 	float m_near;
 	float m_far;
 	float m_fov;
 	float m_aspect;
 
-	nv_math::vec3f m_position;
-	nv_math::vec3f m_rotation;
+	nvmath::vec3f m_position;
+	nvmath::vec3f m_rotation;
 
 	Transform m_transform;
 
-	nv_math::mat4f m_projection;
+	nvmath::mat4f m_projection;
 	bool m_projection_needs_update;
 	bool m_transform_needs_update;
 
 	bool m_view_projection_needs_update;
 
-	nv_math::mat4f m_look_at_matrix;
+	nvmath::mat4f m_look_at_matrix;
 	bool m_use_look_at;
 
 	float m_time;

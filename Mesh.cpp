@@ -96,7 +96,7 @@ void Mesh::addIndex(const uint32_t &inIndex){
 	m_triangle_count = m_index_count / 3;
 }
 
-Triangle4f &Mesh::getTriangle(const uint32_t inIndex){
+Triangle4f Mesh::getTriangle(const uint32_t inIndex){
 	uint32_t startIndex = inIndex * 3;
 	Triangle4f out = {
 		m_vertices[m_indices[startIndex]],
@@ -109,7 +109,7 @@ Triangle4f &Mesh::getTriangle(const uint32_t inIndex){
 	return out;
 }
 
-Triangle4f &Mesh::getTransformedTriangle(Mat4x4f &inTransform, const uint32_t inIndex){
+Triangle4f Mesh::getTransformedTriangle(Mat4x4f &inTransform, const uint32_t inIndex){
 	uint32_t startIndex = inIndex * 3;
 
 	Triangle4f out = {

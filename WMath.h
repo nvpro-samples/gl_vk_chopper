@@ -374,7 +374,7 @@ struct Mat{
 		return out;
 	}
 
-	Vec<T, N> &operator*(const Vec<T, N> &rhs){
+	Vec<T, N> operator*(const Vec<T, N> &rhs){
 		Vec<T, N> out = {0,0,0};
 
 		for (int y = 0; y < M; ++y){
@@ -387,12 +387,12 @@ struct Mat{
 		return out;
 	}
 
-	Vec<T, N> &operator()(const Vec<T, N> &rhs){
+	Vec<T, N> operator()(const Vec<T, N> &rhs){
 		Vec<T, N> out = (*this) * rhs;
 		return out;
 	}
 
-	Mat<T, N, M> &operator()(const Mat<T, N, M> &rhs){
+	Mat<T, N, M> operator()(const Mat<T, N, M> &rhs){
 		Mat<T, N, M> out = (*this) * rhs;
 		return out;
 	}

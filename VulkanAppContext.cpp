@@ -369,24 +369,24 @@ bool VulkanAppContext::initPrograms()
   m_shaderModuleManager.addDirectory(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("shaders"));
 	//inProgramManager.addDirectory(std::string(PROJECT_ABSDIRECTORY));
 
-	m_program_ids.scene_vs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "std_vertex.glsl"));
+  m_program_ids.scene_vs = m_shaderModuleManager.createShaderModule(
+      VK_SHADER_STAGE_VERTEX_BIT, "std_vertex.glsl");
   m_program_ids.scene_fs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "std_fragment.glsl"));
+      VK_SHADER_STAGE_FRAGMENT_BIT, "std_fragment.glsl");
 
   m_program_ids.scene_quad_vs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "vertexQuad.glsl"));
+      VK_SHADER_STAGE_VERTEX_BIT, "vertexQuad.glsl");
   m_program_ids.scene_quad_fs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentQuad.glsl"));
+      VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentQuad.glsl");
 
   m_program_ids.scene_terrain_vs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_VERTEX_BIT, "vertexTerrain.glsl"));
+      VK_SHADER_STAGE_VERTEX_BIT, "vertexTerrain.glsl");
   m_program_ids.scene_terrain_fs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentTerrain.glsl"));
+      VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentTerrain.glsl");
   m_program_ids.scene_terrain_tcs = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, "tcsTerrain.glsl"));
+      VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, "tcsTerrain.glsl");
   m_program_ids.scene_terrain_tes = m_shaderModuleManager.createShaderModule(
-      nvvk::ShaderModuleManager::Definition(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, "tesTerrain.glsl"));
+      VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, "tesTerrain.glsl");
 
 
 	/*

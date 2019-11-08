@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vkaUtils.h"
 #include "VkeCreateUtils.h"
 #include <iostream>
-#include <nvh/nv_dds.h>
+#include <fileformats/nv_dds.h>
 #include "nvh/nvprint.hpp"
 #include "nvpwindow.hpp"
 
@@ -77,7 +77,7 @@ void VkeCubeTexture::loadCubeDDS(const char *inFile){
     searchPaths.push_back(std::string("."));
     searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
     searchPaths.push_back(std::string(PROJECT_NAME) + std::string("/images"));
-    searchPaths.push_back(NVPWindow::sysExePath() + std::string(PROJECT_RELDIRECTORY) + std::string("/images"));
+    searchPaths.push_back(NVPSystem::exePath() + std::string(PROJECT_RELDIRECTORY) + std::string("/images"));
     //searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY);
 
 	nv_dds::CDDSImage ddsImage;

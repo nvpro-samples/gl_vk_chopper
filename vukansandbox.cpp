@@ -33,7 +33,6 @@
 #include <nvh/cameracontrol.hpp>
 #include <nvh/geometry.hpp>
 #include <nvh/misc.hpp>
-#include <nvh/tnulled.hpp>
 
 #include <nvgl/appwindowprofiler_gl.hpp>
 #include <nvgl/base_gl.hpp>
@@ -309,7 +308,7 @@ using namespace pathclipping;
 
 int main(int argc, const char** argv)
 {
-  NVPWindow::System system(argv[0], PROJECT_NAME);
+  NVPSystem system(argv[0], PROJECT_NAME);
   Sample            sample;
 
   return sample.run(PROJECT_NAME, argc, argv, SAMPLE_SIZE_WIDTH, SAMPLE_SIZE_HEIGHT);

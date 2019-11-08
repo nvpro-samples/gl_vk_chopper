@@ -119,14 +119,14 @@ private:
 
 
   struct ModuleIDs {
-    nvvk::ShaderModuleManager::ShaderModuleID scene_vs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_fs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_quad_vs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_quad_fs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_vs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_fs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_tcs;
-    nvvk::ShaderModuleManager::ShaderModuleID scene_terrain_tes;
+    nvvk::ShaderModuleID scene_vs;
+    nvvk::ShaderModuleID scene_fs;
+    nvvk::ShaderModuleID scene_quad_vs;
+    nvvk::ShaderModuleID scene_quad_fs;
+    nvvk::ShaderModuleID scene_terrain_vs;
+    nvvk::ShaderModuleID scene_terrain_fs;
+    nvvk::ShaderModuleID scene_terrain_tcs;
+    nvvk::ShaderModuleID scene_terrain_tes;
   } m_program_ids;
 
 public:

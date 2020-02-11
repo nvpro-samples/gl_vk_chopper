@@ -34,14 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include<vector>
 #include<float.h>
 
-#ifndef fmax
-#define fmax(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef fmin
-#define fmin(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 template<typename T, int N>
 struct Vec{
 

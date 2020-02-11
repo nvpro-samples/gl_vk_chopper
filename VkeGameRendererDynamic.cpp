@@ -315,10 +315,10 @@ void vkeGameRendererDynamic::initRenderer(){
 
 	m_instance_count = 128;
 
-	//glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddressGL("glWaitVkSemaphoreNV");
-	//glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPWindow::sysGetProcAddressGL("glSignalVkSemaphoreNV");
-	//glSignalVkFenceNV = (PFNGLSIGNALVKFENCENVPROC)NVPWindow::sysGetProcAddressGL("glSignalVkFenceNV");
-//	glDrawVkImageNV = (PFNGLDRAWVKIMAGENVPROC)NVPWindow::sysGetProcAddressGL("glDrawVkImageNV");
+	//glWaitVkSemaphoreNV = (PFNGLWAITVKSEMAPHORENVPROC)NVPSystem::GetProcAddressGL("glWaitVkSemaphoreNV");
+	//glSignalVkSemaphoreNV = (PFNGLSIGNALVKSEMAPHORENVPROC)NVPSystem::GetProcAddressGL("glSignalVkSemaphoreNV");
+	//glSignalVkFenceNV = (PFNGLSIGNALVKFENCENVPROC)NVPSystem::GetProcAddressGL("glSignalVkFenceNV");
+//	glDrawVkImageNV = (PFNGLDRAWVKIMAGENVPROC)NVPSystem::GetProcAddressGL("glDrawVkImageNV");
 
 	VkSemaphoreCreateInfo semInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
 	VkFenceCreateInfo fenceInfo = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};

@@ -41,7 +41,7 @@ public:
 
 
 	nvmath::mat4f &getProjection(){ return m_projection; }
-	nvmath::mat4f &getViewProjection() {
+  nvmath::mat4f getViewProjection() {
 		nvmath::mat4f out;
 		out.identity();
 		out = m_projection * out;

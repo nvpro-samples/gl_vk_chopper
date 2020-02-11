@@ -163,7 +163,8 @@ public:
 		updateVKBufferData();
 
 
-		bufferViewCreate(&m_data.buffer, &m_data.view, m_data_size);
+    // If not used as uniform texel buffer or storage texel buffer ,no view is necessary
+    // bufferViewCreate(&m_data.buffer, &m_data.view, m_data_size);
 
 		VkDescriptorBufferInfo bufInfo;
 		bufInfo.buffer = m_data.buffer;

@@ -239,7 +239,7 @@ bool Sample::begin()
 
 
   // TwInit(TW_OPENGL_CORE,NULL);
-  // TwWindowSize(m_windowState.m_viewsize[0], m_windowState.m_viewsize[1]);
+  // TwWindowSize(m_windowState.m_swapSize[0], m_windowState.m_swapSize[1]);
 
   //  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glDisable(GL_CULL_FACE);
@@ -249,7 +249,7 @@ bool Sample::begin()
 
   validated = validated && initMisc();
   validated = validated && initScene();
-  validated = validated && initFramebuffers(m_windowState.m_viewSize[0], m_windowState.m_viewSize[1], 8);
+  validated = validated && initFramebuffers(m_windowState.m_swapSize[0], m_windowState.m_swapSize[1], 8);
 
   initVulkan();
 
@@ -268,13 +268,13 @@ bool Sample::begin()
 void Sample::think(double time)
 {
 
-  m_control.processActions(m_windowState.m_viewSize,
+  m_control.processActions(m_windowState.m_swapSize,
                            nvmath::vec2f(m_windowState.m_mouseCurrent[0], m_windowState.m_mouseCurrent[1]),
                            m_windowState.m_mouseButtonFlags, m_windowState.m_mouseWheel);
 
 
-  int width  = m_windowState.m_viewSize[0];
-  int height = m_windowState.m_viewSize[1];
+  int width  = m_windowState.m_swapSize[0];
+  int height = m_windowState.m_swapSize[1];
 
   VulkanAppContext* ctxt = VulkanAppContext::GetInstance();
   ctxt->setCameraMatrix(m_control.m_viewMatrix);

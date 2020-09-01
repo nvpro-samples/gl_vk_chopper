@@ -139,7 +139,7 @@ void createBufferData(uint8_t *inputData, size_t inputSize, BufferData *outData,
 	map/copy/unmap
 	*/
 	uint8_t *vData;
-	VKA_CHECK_ERROR(vkMapMemory(device->getVKDevice(), outData->memory, 0, 0, 0, (void **)&vData), "Could not map vertex buffer memory.\n");
+  VKA_CHECK_ERROR(vkMapMemory(device->getVKDevice(), outData->memory, 0, VK_WHOLE_SIZE, 0, (void **)&vData), "Could not map vertex buffer memory.\n");
 	memcpy(vData, (const void *)&(inputData[0]), inputSize);
     vkUnmapMemory(device->getVKDevice(), outData->memory);
 	bufferViewCreate(&outData->buf, &outData->view, inputSize);

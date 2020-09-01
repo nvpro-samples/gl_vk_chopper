@@ -169,7 +169,7 @@ void VkeTexture::loadDDSTextureFile(const char *inFile){
 		void *data;
 
 		vkGetImageSubresourceLayout(getDefaultDevice(), stagingTex.image, &subres, &layout);
-		VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, 0, 0, &data), "Could not map memory for image.\n");
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, VK_WHOLE_SIZE, 0, &data), "Could not map memory for image.\n");
 	
 		const nv_dds::CSurface &mipmap = ddsImage.get_mipmap(0);
 		uint32_t sz = mipmap.get_size();
@@ -266,7 +266,7 @@ void VkeTexture::loadTextureFloatData(float *inData, uint32_t inWidth, uint32_t 
 		void *data;
 
 		vkGetImageSubresourceLayout(getDefaultDevice(), stagingTex.image, &subres, &layout);
-		VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, 0, 0, &data), "Could not map memory for image.\n");
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, VK_WHOLE_SIZE, 0, &data), "Could not map memory for image.\n");
 
 		memcpy(data, inData, inWidth*inHeight*inCompCount*sizeof(float));
 
@@ -369,7 +369,7 @@ void VkeTexture::loadTextureFile(const char *inPath){
 		void *data;
 
 		vkGetImageSubresourceLayout(getDefaultDevice(),stagingTex.image,&subres,&layout);
-		VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, 0, 0, &data), "Could not map memory for image.\n");
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), stagingTex.memory, 0, VK_WHOLE_SIZE, 0, &data), "Could not map memory for image.\n");
 
 		if (!loadTexture((const char *)filePath.c_str(), (uint8_t**)&data, layout.rowPitch, &m_width, &m_height)){
 			VKA_ERROR_MSG("Could not load final image.\n");

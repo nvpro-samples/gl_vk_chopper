@@ -89,7 +89,7 @@ public:
 
 		Data &useData = (m_use_staging) ? m_staging : m_data;
 
-		VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), useData.memory, 0, 0, 0, (void **)&vData), "Could not map buffer memory.\n");
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), useData.memory, 0, VK_WHOLE_SIZE, 0, (void **)&vData), "Could not map buffer memory.\n");
 
 		memcpy(vData, (const void *)&(m_backing_store[0]), m_data_size);
 

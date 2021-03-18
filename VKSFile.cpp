@@ -51,7 +51,6 @@ void readVKSFile(VKSFile *inFile){
     searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
     searchPaths.push_back(std::string(PROJECT_NAME));
     searchPaths.push_back(NVPSystem::exePath() + std::string(PROJECT_RELDIRECTORY));
-	//searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY));
 
     std::string filePath;
 	for (uint32_t i = 0; i < searchPaths.size(); ++i){

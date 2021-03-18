@@ -367,7 +367,6 @@ bool VulkanAppContext::initPrograms()
   m_shaderModuleManager.addDirectory(std::string("./GLSL_" PROJECT_NAME));
   m_shaderModuleManager.addDirectory(std::string(PROJECT_NAME) + std::string("shaders"));
   m_shaderModuleManager.addDirectory(NVPSystem::exePath() + std::string(PROJECT_RELDIRECTORY) + std::string("shaders"));
-	//inProgramManager.addDirectory(std::string(PROJECT_ABSDIRECTORY));
 
   m_program_ids.scene_vs = m_shaderModuleManager.createShaderModule(
       VK_SHADER_STAGE_VERTEX_BIT, "std_vertex.glsl");

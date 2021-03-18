@@ -78,7 +78,6 @@ void VkeCubeTexture::loadCubeDDS(const char* inFile)
   searchPaths.push_back(std::string("./resources_" PROJECT_NAME));
   searchPaths.push_back(std::string(PROJECT_NAME) + std::string("/images"));
   searchPaths.push_back(NVPSystem::exePath() + std::string(PROJECT_RELDIRECTORY) + std::string("/images"));
-  //searchPaths.push_back(std::string(PROJECT_ABSDIRECTORY);
 
   nv_dds::CDDSImage ddsImage;
 

@@ -7,22 +7,22 @@ Message(STATUS "-------------------------------")
 Message(STATUS "Processing Project ${PROJNAME}:")
 
 #####################################################################################
-# look for shared_sources 1) as a sub-folder 2) at some other locations
+# look for nvpro_core 1) as a sub-folder 2) at some other locations
 # this cannot be put anywhere else since we still didn't find setup.cmake yet
 #
 if(NOT BASE_DIRECTORY)
 
   find_path(BASE_DIRECTORY
-    NAMES shared_sources/cmake/setup.cmake
+    NAMES nvpro_core/cmake/setup.cmake
     PATHS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/../.. 
     REQUIRED
-    DOC "Directory containing shared_sources"
+    DOC "Directory containing nvpro_core"
     )
 endif()
-if(EXISTS ${BASE_DIRECTORY}/shared_sources/cmake/setup.cmake)
-  include(${BASE_DIRECTORY}/shared_sources/cmake/setup.cmake)
+if(EXISTS ${BASE_DIRECTORY}/nvpro_core/cmake/setup.cmake)
+  include(${BASE_DIRECTORY}/nvpro_core/cmake/setup.cmake)
 else()
-  message(FATAL_ERROR "could not find base directory, please set BASE_DIRECTORY to folder containing shared_sources")
+  message(FATAL_ERROR "could not find base directory, please set BASE_DIRECTORY to folder containing nvpro_core")
 endif()
     
 _add_project_definitions(${PROJNAME})
@@ -40,7 +40,7 @@ _add_package_ShaderC()
 
 #####################################################################################
 # process the rest of some cmake code that needs to be done *after* the packages add
-_add_shared_sources_lib()
+_add_nvpro_core_lib()
 
 #####################################################################################
 # Source files for this project
@@ -87,13 +87,13 @@ source_group(shaders FILES
 target_link_libraries(${PROJNAME} optimized
     ${LIBRARIES_OPTIMIZED}
     ${PLATFORM_LIBRARIES}
-    shared_sources
+    nvpro_core
      ${UNIXLINKLIBS}
 )
 target_link_libraries(${PROJNAME} debug
     ${LIBRARIES_DEBUG}
     ${PLATFORM_LIBRARIES}
-    shared_sources
+    nvpro_core
     ${UNIXLINKLIBS}
 )
 

@@ -1,128 +1,123 @@
-/*-----------------------------------------------------------------------
-Copyright (c) 2014-2016, NVIDIA. All rights reserved.
+/*
+ * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Neither the name of its contributors may be used to endorse
-or promote products derived from this software without specific
-prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
------------------------------------------------------------------------*/
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #ifndef __H_NODE_
 #define __H_NODE_
 
-#include"Transform.h"
-#include"Renderable.h"
-#include"Types.h"
-#include<map>
-#include<vector>
-
+#include "Renderable.h"
+#include "Transform.h"
+#include "Types.h"
+#include <map>
+#include <vector>
 
 
 #pragma once
 class Node
 {
 public:
-	typedef uint32_t ID;
-	typedef uint32_t Count;
-	typedef std::map<ID, Node*> Map;
-	typedef std::vector<Node*> List;
+  typedef size_t              ID;
+  typedef size_t              Count;
+  typedef std::map<ID, Node*> Map;
+  typedef std::vector<Node*>  List;
 
-	Node();
-	Node(Node   *inParent, const ID &inID);
-	~Node();
+  Node();
+  Node(Node* inParent, const ID& inID);
+  ~Node();
 
-	void reset();
-	bool update(bool inUpdateChildren = false);
-	void draw();
+  void reset();
+  bool update(bool inUpdateChildren = false);
+  void draw();
 
-	class NodeList{
-	public:
-		NodeList();
-		~NodeList();
+  class NodeList
+  {
+  public:
+    NodeList();
+    ~NodeList();
 
-		Node *newNode(const ID &inID,Node *inParent = NULL);
-		void addNode(Node *inNode, Node *inParent = NULL);
-		Node *getNode(const ID &inID);
+    Node* newNode(const ID& inID, Node* inParent = NULL);
+    void  addNode(Node* inNode, Node* inParent = NULL);
+    Node* getNode(const ID& inID);
 
-		Node::List &getData(){ return m_data; }
+    Node::List& getData() { return m_data; }
 
-		template<typename T>
-		T* newNodeClass(Node *inParent=NULL){
+    template <typename T>
+    T* newNodeClass(Node* inParent = NULL)
+    {
 
-            typename T::ID id = nextID();
+      typename T::ID id = nextID();
 
-            T* node = new T(inParent, id);
-			
-			addNode(node);
+      T* node = new T(inParent, id);
 
-			return node;
-		}
+      addNode(node);
 
-		ID nextID();
-		Count count();
-	private:
-		Node::List m_data;
-	};
+      return node;
+    }
 
-	void setPosition(float inX, float inY, float inZ);
-	void setRotation(float inX, float inY, float inZ);
-	void setRotation(nvmath::quatf &inQuat);
-	void setScale(float inX, float inY, float inZ);
-	void setScale(float inScale);
+    ID    nextID();
+    Count count();
 
-	nvmath::vec4f worldPosition();
-	nvmath::vec4f worldPosition(nvmath::vec4f &inPosition);
+  private:
+    Node::List m_data;
+  };
 
-	Node *newChild();
-	Node *newChild(const ID &inID);
-	Node *newChild(const Vec4f &inPosition);
-	Node *newChild(const float inX, const float inY, const float inZ);
+  void setPosition(float inX, float inY, float inZ);
+  void setRotation(float inX, float inY, float inZ);
+  void setRotation(nvmath::quatf& inQuat);
+  void setScale(float inX, float inY, float inZ);
+  void setScale(float inScale);
 
-	Renderable *newRenderable();
-	Renderable *getRenderable(const Renderable::ID &inID);
+  nvmath::vec4f worldPosition();
+  nvmath::vec4f worldPosition(nvmath::vec4f& inPosition);
 
-	NodeList &ChildNodes();
-	Transform &GetTransform();
+  Node* newChild();
+  Node* newChild(const ID& inID);
+  Node* newChild(const Vec4f& inPosition);
+  Node* newChild(const float inX, const float inY, const float inZ);
 
-	Node *getParent() { return m_parent; }
-	void setParent(Node *inParent) { m_parent = inParent; }
+  Renderable* newRenderable();
+  Renderable* getRenderable(const Renderable::ID& inID);
 
-	void getTriangles(render::TriangleList &outTriangles);
+  NodeList&  ChildNodes();
+  Transform& GetTransform();
 
-	ID getID(){ return m_id; }
+  Node* getParent() { return m_parent; }
+  void  setParent(Node* inParent) { m_parent = inParent; }
+
+  void getTriangles(render::TriangleList& outTriangles);
+
+  ID getID() { return m_id; }
 
 protected:
-	ID m_id;
-	Node	*m_parent;
-	Transform m_transform;
+  ID        m_id;
+  Node*     m_parent;
+  Transform m_transform;
 
-	NodeList m_child_nodes;
-	Renderable::List m_renderables;
+  NodeList         m_child_nodes;
+  Renderable::List m_renderables;
 
-	nvmath::vec3f m_position;
-	nvmath::vec3f m_rotation;
-	nvmath::vec3f m_scale;
+  nvmath::vec3f m_position;
+  nvmath::vec3f m_rotation;
+  nvmath::vec3f m_scale;
 
-	bool m_transform_needs_update;
-
-
+  bool m_transform_needs_update;
 };
 
 

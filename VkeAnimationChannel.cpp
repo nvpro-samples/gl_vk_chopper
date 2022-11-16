@@ -92,7 +92,11 @@ nvmath::quatf VkeAnimationChannel::currentQuatValue()
 
   double timeDelta = pair.high->getTime() - pair.low->getTime();
   if(timeDelta == 0.0)
-    return (nvmath::quatf)pair.low->getValue();
+  {
+    nvmath::vec4f vValue = pair.low->getValue();
+    nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+    return qValue;
+  }
 
   double durationDelta = curTime - pair.low->getTime();
 

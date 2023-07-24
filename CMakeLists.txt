@@ -55,7 +55,6 @@ file(GLOB IMAGE_FILES images/*.*)
 # Executable
 #
 if(WIN32 AND NOT GLUT_FOUND)
-  add_definitions(/wd4996) #remove printf warning
   add_definitions(/wd4244) #remove double to float conversion warning
   add_definitions(/wd4305) #remove double to float truncation warning
 endif()
@@ -84,18 +83,15 @@ source_group(shaders FILES
 #####################################################################################
 # Linkage
 #
-target_link_libraries(${PROJNAME} optimized
-    ${LIBRARIES_OPTIMIZED}
-    ${PLATFORM_LIBRARIES}
-    nvpro_core
-     ${UNIXLINKLIBS}
-)
-target_link_libraries(${PROJNAME} debug
-    ${LIBRARIES_DEBUG}
-    ${PLATFORM_LIBRARIES}
-    nvpro_core
-    ${UNIXLINKLIBS}
-)
+target_link_libraries(${PROJNAME} nvpro_core ${PLATFORM_LIBRARIES} ${UNIXLINKLIBS})
+
+foreach(DEBUGLIB ${LIBRARIES_DEBUG})
+  target_link_libraries(${PROJECT_NAME} debug ${DEBUGLIB})
+endforeach(DEBUGLIB)
+
+foreach(RELEASELIB ${LIBRARIES_OPTIMIZED})
+  target_link_libraries(${PROJECT_NAME} optimized ${RELEASELIB})
+endforeach(RELEASELIB)
 
 #####################################################################################
 # copies binaries that need to be put next to the exe files (ZLib, etc.)

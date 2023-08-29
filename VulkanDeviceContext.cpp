@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ void VulkanDC::Device::Queue::initQueue(VulkanDC::Device* inDevice)
 
   VkCommandPoolCreateInfo cmdPoolInfo;
   commandPoolCreateInfo(&cmdPoolInfo, m_node_id, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-  VKA_CHECK_ERROR(vkCreateCommandPool(device, &cmdPoolInfo, NULL, &m_command_pool), "Could not create command Pool.\n");
+  VKA_CHECK_ERROR(vkCreateCommandPool(device, &cmdPoolInfo, NULL, &m_command_pool), "Could not create command pool.");
 }
 
 void VulkanDC::Device::Queue::createCommandBuffer(VkCommandBuffer* outBuffer, VkCommandBufferLevel inLevel)
@@ -106,7 +106,7 @@ void VulkanDC::Device::Queue::beginCommandBuffer(VkCommandBuffer*          inBuf
   cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   cmdBufInfo.flags = inFlags;
 
-  VKA_CHECK_ERROR(vkBeginCommandBuffer(*inBuffer, &cmdBufInfo), "Could not begin command buffer.\n");
+  VKA_CHECK_ERROR(vkBeginCommandBuffer(*inBuffer, &cmdBufInfo), "Could not begin command buffer.");
 }
 
 void VulkanDC::Device::Queue::beginCommandBuffer(VulkanDC::Device::Queue::CommandBufferID& inID,
@@ -127,7 +127,7 @@ void VulkanDC::Device::Queue::beginCommandBuffer(VulkanDC::Device::Queue::Comman
   cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   cmdBufInfo.flags = inFlags;
 
-  VKA_CHECK_ERROR(vkBeginCommandBuffer(*outBuffer, &cmdBufInfo), "Could not begin command buffer.\n");
+  VKA_CHECK_ERROR(vkBeginCommandBuffer(*outBuffer, &cmdBufInfo), "Could not begin command buffer.");
 }
 
 VkCommandBuffer VulkanDC::Device::Queue::getCachedCommandBuffer(VulkanDC::Device::Queue::CommandBufferID& inID)
@@ -145,7 +145,7 @@ void VulkanDC::Device::Queue::resetCommandBuffer(VulkanDC::Device::Queue::Comman
   if(cmd == VK_NULL_HANDLE)
     return;
 
-  VkResult rslt = vkResetCommandBuffer(cmd, 0);
+  VKA_CHECK_ERROR(vkResetCommandBuffer(cmd, 0), "Could not reset command buffer.");
 
   VkCommandBufferBeginInfo cmdBufInfo;
   memset(&cmdBufInfo, 0, sizeof(cmdBufInfo));
@@ -153,7 +153,7 @@ void VulkanDC::Device::Queue::resetCommandBuffer(VulkanDC::Device::Queue::Comman
   cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   cmdBufInfo.flags = 0;
 
-  VKA_CHECK_ERROR(vkBeginCommandBuffer(cmd, &cmdBufInfo), "Could not begin command buffer.\n");
+  VKA_CHECK_ERROR(vkBeginCommandBuffer(cmd, &cmdBufInfo), "Could not begin command buffer.");
 }
 
 void VulkanDC::Device::Queue::flushPersistentBuffer(VulkanDC::Device::Queue::CommandBufferID& inID, VkFence* inFence)
@@ -163,7 +163,7 @@ void VulkanDC::Device::Queue::flushPersistentBuffer(VulkanDC::Device::Queue::Com
   if(cmd == VK_NULL_HANDLE)
     return;
 
-  VKA_CHECK_ERROR(vkEndCommandBuffer(cmd), "Could not end command buffer.\n");
+  VKA_CHECK_ERROR(vkEndCommandBuffer(cmd), "Could not end command buffer.");
   VkCommandBuffer bufs[]   = {cmd};
   VkFence         theFence = VK_NULL_HANDLE;
   if(inFence)
@@ -177,7 +177,7 @@ void VulkanDC::Device::Queue::flushPersistentBuffer(VulkanDC::Device::Queue::Com
   subInfo.commandBufferCount = 1;
   subInfo.pCommandBuffers    = bufs;
 
-  VKA_CHECK_ERROR(vkQueueSubmit(m_queue, 1, &subInfo, theFence), "Could not submit queue.\n");
+  VKA_CHECK_ERROR(vkQueueSubmit(m_queue, 1, &subInfo, theFence), "Could not submit queue.");
 }
 
 void VulkanDC::Device::Queue::flushCommandBuffer(VulkanDC::Device::Queue::CommandBufferID& inID, VkFence* inFence, bool inDestroy)
@@ -187,7 +187,7 @@ void VulkanDC::Device::Queue::flushCommandBuffer(VulkanDC::Device::Queue::Comman
   if(cmd == VK_NULL_HANDLE)
     return;
 
-  VKA_CHECK_ERROR(vkEndCommandBuffer(cmd), "Could not end command buffer.\n");
+  VKA_CHECK_ERROR(vkEndCommandBuffer(cmd), "Could not end command buffer.");
 
   VkCommandBuffer bufs[]       = {cmd};
   VkFence         theFence     = VK_NULL_HANDLE;
@@ -209,12 +209,11 @@ void VulkanDC::Device::Queue::flushCommandBuffer(VulkanDC::Device::Queue::Comman
   subInfo.commandBufferCount = 1;
   subInfo.pCommandBuffers    = bufs;
 
-  VKA_CHECK_ERROR(vkQueueSubmit(m_queue, 1, &subInfo, theFence), "Could not submit queue.\n");
+  VKA_CHECK_ERROR(vkQueueSubmit(m_queue, 1, &subInfo, theFence), "Could not submit queue.");
 
   if(inDestroy)
   {
-    VKA_CHECK_ERROR(vkWaitForFences(m_device->getVKDevice(), 1, &theFence, VK_TRUE, 100000000000),
-                    "Could not wait for idle queue.\n");
+    VKA_CHECK_ERROR(vkWaitForFences(m_device->getVKDevice(), 1, &theFence, VK_TRUE, 100000000000), "Could not wait for idle queue.");
 
     destroyCachedCommandBuffer(inID);
 
@@ -278,7 +277,7 @@ uint32_t VulkanDC::Device::getBestMemoryType(uint32_t inType, VkFlags inFlags)
 
 void VulkanDC::Device::waitIdle()
 {
-  VKA_CHECK_ERROR(vkDeviceWaitIdle(m_device), "Could not wait for device idle.\n");
+  VKA_CHECK_ERROR(vkDeviceWaitIdle(m_device), "Could not wait for device idle.");
 }
 
 void VulkanDC::Device::initDevice()
@@ -286,45 +285,39 @@ void VulkanDC::Device::initDevice()
 
   VkLayerProperties* layerProps;
   uint32_t           propCount;
-  VkResult           err = vkEnumerateDeviceLayerProperties(m_physical_device, &propCount, NULL);
-  if(err == VK_SUCCESS)
-  {
-    layerProps = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * propCount);
-    err        = vkEnumerateDeviceLayerProperties(m_physical_device, &propCount, layerProps);
-  }
+  VKA_CHECK_ERROR(vkEnumerateDeviceLayerProperties(m_physical_device, &propCount, NULL), "Could not enumerate device layer properties.");
+  layerProps = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * propCount);
+  VKA_CHECK_ERROR(vkEnumerateDeviceLayerProperties(m_physical_device, &propCount, layerProps),
+                  "Could not collect device layer properties.");
 
   vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
 
   m_queue_count = 4;
 
-
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &m_queue_count, NULL);
 
-  m_queue_properties = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * m_queue_count);
+  m_queue_properties.resize(m_queue_count);
 
   vkGetPhysicalDeviceMemoryProperties(m_physical_device, &m_memory_properties);
 
+  vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &m_queue_count, m_queue_properties.data());
 
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &m_queue_count, m_queue_properties);
+  std::vector<float>      priorities(m_queue_count, 1.0f);
+  VkDeviceQueueCreateInfo queueInfo = {VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
+  queueInfo.queueCount              = m_queue_count;
+  queueInfo.queueFamilyIndex        = 0;
+  queueInfo.pQueuePriorities        = priorities.data();
 
-  for(uint32_t i = 0; i < m_queue_count; ++i)
-  {
-    VkQueueFamilyProperties qfp = m_queue_properties[i];
-    continue;
-  }
+  VkPhysicalDeviceFeatures requiredFeatures{};
+  requiredFeatures.geometryShader     = VK_TRUE;
+  requiredFeatures.tessellationShader = VK_TRUE;
+  requiredFeatures.depthClamp         = VK_TRUE;
+  requiredFeatures.multiDrawIndirect  = VK_TRUE;
 
-  float                   priorities = {1.0f};
-  VkDeviceQueueCreateInfo queueInfo  = {};
-  queueInfo.queueCount               = m_queue_count;
-  queueInfo.queueFamilyIndex         = 0;
-  queueInfo.pQueuePriorities         = &priorities;
+  deviceCreate(&m_device, &m_physical_device, m_queue_count, &queueInfo, m_extension_count, m_extension_names, 0,
+               nullptr, &requiredFeatures);
 
-  m_extension_count = 0;
-
-  deviceCreate(&m_device, &m_physical_device, m_queue_count, &queueInfo, m_extension_count, m_extension_names);
-
-
-  std::cout << "Device ID : " << m_device << std::endl;
+  LOGI("Device ID : %p\n", m_device);
 }
 
 
@@ -386,20 +379,18 @@ void VulkanDC::initDevices()
   if(!m_has_instance)
     return;
 
-  std::cout << "Initialising Devices" << std::endl;
+  LOGI("Initialising Devices\n");
 
   m_device_count = 0;
 
-  VKA_CHECK_ERROR(vkEnumeratePhysicalDevices(m_vk_instance, &m_device_count, NULL),
-                  "Could not get physical device count.\n");
+  VKA_CHECK_ERROR(vkEnumeratePhysicalDevices(m_vk_instance, &m_device_count, NULL), "Could not get physical device count.");
 
+  LOGI("Found %u Devices\n", m_device_count);
 
-  std::cout << "Found " << m_device_count << " Devices" << std::endl;
+  m_physical_devices.resize(m_device_count);
 
-  m_physical_devices = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * m_device_count);
-
-  VKA_CHECK_ERROR(vkEnumeratePhysicalDevices(m_vk_instance, &m_device_count, m_physical_devices),
-                  "Could not get physical devices.\n");
+  VKA_CHECK_ERROR(vkEnumeratePhysicalDevices(m_vk_instance, &m_device_count, m_physical_devices.data()),
+                  "Could not get physical devices.");
 
   for(uint32_t i = 0; i < m_device_count; ++i)
   {

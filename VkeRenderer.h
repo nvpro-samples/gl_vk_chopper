@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,25 +73,25 @@ public:
 
 
 protected:
-  bool m_is_first_frame;
+  bool m_is_first_frame = true;
 
-  VkDescriptorPool m_descriptor_pool;
-  uint32_t         m_descriptor_pool_size;
+  VkDescriptorPool m_descriptor_pool      = VK_NULL_HANDLE;
+  uint32_t         m_descriptor_pool_size = 0;
 
-  VkSampleCountFlagBits m_samples;
+  VkSampleCountFlagBits m_samples = VK_SAMPLE_COUNT_8_BIT;
 
-  VkPipelineLayout m_pipeline_layout;
-  VkPipeline       m_pipeline;
-  VkPipelineCache  m_pipeline_cache;
-  VkRenderPass     m_render_pass;
+  VkPipelineLayout m_pipeline_layout = VK_NULL_HANDLE;
+  VkPipeline       m_pipeline        = VK_NULL_HANDLE;
+  VkPipelineCache  m_pipeline_cache  = VK_NULL_HANDLE;
+  VkRenderPass     m_render_pass     = VK_NULL_HANDLE;
 
-  uint32_t      m_descriptor_set_count;
-  VkFramebuffer m_framebuffers[2];
+  uint32_t      m_descriptor_set_count = 0;
+  VkFramebuffer m_framebuffers[2]{};
 
   virtual size_t getRequiredDescriptorCount() = 0;
 
-  uint32_t m_width;
-  uint32_t m_height;
+  uint32_t m_width  = 1024;
+  uint32_t m_height = 768;
 };
 
 

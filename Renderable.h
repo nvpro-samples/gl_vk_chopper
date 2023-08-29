@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2031, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ public:
   void  setMesh(const Mesh::ID& inID);
 
 private:
-  Mesh::ID m_mesh_id;
-  uint32_t m_surface_id;
+  Mesh::ID m_mesh_id = 0;
 };
 
 #endif

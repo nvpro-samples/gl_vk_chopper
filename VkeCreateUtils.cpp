@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@
 
 #include "VkeCreateUtils.h"
 #include "VulkanDeviceContext.h"
-#include "nvh/nvprint.hpp"
 #include <iostream>
 #include <memory.h>
+#include <nvh/fileoperations.hpp>
+#include <nvh/nvprint.hpp>
+#include <nvvk/commands_vk.hpp>
 #include <vulkan/vulkan.h>
 
 VkDevice getDefaultDevice()
@@ -69,8 +71,7 @@ void commandPoolCreate(VkCommandPool* outPool, uint32_t inQueueFamilyIndex, VkCo
   VkCommandPoolCreateInfo cmdPoolInfo;
   commandPoolCreateInfo(&cmdPoolInfo, inQueueFamilyIndex, inFlags);
 
-  VKA_CHECK_ERROR(vkCreateCommandPool(getDefaultDevice(), &cmdPoolInfo, NULL, outPool),
-                  "Could not create command pool.\n");
+  VKA_CHECK_ERROR(vkCreateCommandPool(getDefaultDevice(), &cmdPoolInfo, NULL, outPool), "Could not create command pool.\n");
 }
 
 
@@ -118,7 +119,7 @@ void imageSetLayout(VkCommandBuffer*   inCmd,
   imageBarrierCreate(inCmd, oldLayout, newLayout, image, subRange);
 }
 
-void bufferCreateInfo(VkBufferCreateInfo* outBuffer, size_t inputSize, VkBufferUsageFlagBits inUsage)
+void bufferCreateInfo(VkBufferCreateInfo* outBuffer, size_t inputSize, VkBufferUsageFlags inUsage)
 {
   memset(outBuffer, 0, sizeof(VkBufferCreateInfo));
   outBuffer->sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -126,7 +127,7 @@ void bufferCreateInfo(VkBufferCreateInfo* outBuffer, size_t inputSize, VkBufferU
   outBuffer->size  = inputSize;
 }
 
-void bufferCreate(VkBuffer* outBuffer, size_t inputSize, VkBufferUsageFlagBits inUsage)
+void bufferCreate(VkBuffer* outBuffer, size_t inputSize, VkBufferUsageFlags inUsage)
 {
 
   VkBufferCreateInfo bufInfo;
@@ -199,7 +200,7 @@ void imageCreateInfo(VkImageCreateInfo*    outInfo,
                      uint32_t              inHeight,
                      uint32_t              inDepth,
                      uint32_t              inArraySize,
-                     VkImageUsageFlagBits  inUsage,
+                     VkImageUsageFlags     inUsage,
                      VkImageTiling         inTiling,
                      VkSampleCountFlagBits inSamples,
                      uint32_t              inMipLevels)
@@ -234,7 +235,7 @@ void imageCreate(VkImage*              outImage,
                  uint32_t              inDepth,
                  uint32_t              inArraySize,
                  VkFlags               inMemFlags,
-                 VkImageUsageFlagBits  inUsage,
+                 VkImageUsageFlags     inUsage,
                  VkImageTiling         inTiling,
                  VkSampleCountFlagBits inSamples,
                  uint32_t              inMipLevels)
@@ -261,8 +262,7 @@ void imageCreate(VkImage*              outImage,
   memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, inMemFlags);
 
 
-  VKA_CHECK_ERROR(vkAllocateMemory(getDefaultDevice(), &memAlloc, NULL, outMemory),
-                  "Could not allocate image memory on device.\n");
+  VKA_CHECK_ERROR(vkAllocateMemory(getDefaultDevice(), &memAlloc, NULL, outMemory), "Could not allocate image memory on device.\n");
 }
 
 void imageCreateAndBind(VkImage*              outImage,
@@ -274,7 +274,7 @@ void imageCreateAndBind(VkImage*              outImage,
                         uint32_t              inDepth,
                         uint32_t              inArraySize,
                         VkFlags               inMemFlags,
-                        VkImageUsageFlagBits  inUsage,
+                        VkImageUsageFlags     inUsage,
                         VkImageTiling         inTiling,
                         VkSampleCountFlagBits inSamples,
                         uint32_t              inMipLevels)
@@ -598,46 +598,23 @@ void imageBarrierCreate(VkCommandBuffer*         inCmd,
                         VkImageLayout            inNewLayout,
                         VkImage                  inImage,
                         VkImageSubresourceRange& inSubRange,
-                        VkAccessFlags            inOutputMask,
-                        VkAccessFlags            inInputMask,
                         VkAccessFlagBits         inSrcAccessMask,
-                        VkAccessFlagBits         inDstAccessMask,
-                        VkPipelineStageFlags     inSrcStages,
-                        VkPipelineStageFlags     inDestStages
-
-)
+                        VkAccessFlagBits         inDstAccessMask)
 {
-
-
-  VkImageMemoryBarrier image_memory_barrier;
-  memset(&image_memory_barrier, 0, sizeof(image_memory_barrier));
-
-  image_memory_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-  image_memory_barrier.pNext               = NULL;
+  VkImageMemoryBarrier image_memory_barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
   image_memory_barrier.dstAccessMask       = inDstAccessMask;
   image_memory_barrier.srcAccessMask       = inSrcAccessMask;
-  image_memory_barrier.oldLayout           = VK_IMAGE_LAYOUT_GENERAL;
+  image_memory_barrier.oldLayout           = inOldLayout;
   image_memory_barrier.newLayout           = inNewLayout;
   image_memory_barrier.image               = inImage;
   image_memory_barrier.subresourceRange    = inSubRange;
-  image_memory_barrier.srcQueueFamilyIndex = 0;
-  image_memory_barrier.dstQueueFamilyIndex = 0;
+  image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-  if(inNewLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-  {
-    image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-  }
+  VkPipelineStageFlags srcStages = nvvk::makeAccessMaskPipelineStageFlags(inSrcAccessMask);
+  VkPipelineStageFlags dstStages = nvvk::makeAccessMaskPipelineStageFlags(inDstAccessMask);
 
-  if(inNewLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-  {
-    image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-  }
-
-  VkImageMemoryBarrier* pMemoryBarrier = &image_memory_barrier;
-  VkPipelineStageFlags  srcStages      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-  VkPipelineStageFlags  destStages     = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-
-  vkCmdPipelineBarrier(*inCmd, srcStages, destStages, false, 0, NULL, 0, NULL, 1, pMemoryBarrier);
+  vkCmdPipelineBarrier(*inCmd, srcStages, dstStages, false, 0, NULL, 0, NULL, 1, &image_memory_barrier);
 }
 
 void imageSubresourceRange(VkImageSubresourceRange* outRange,
@@ -793,7 +770,8 @@ void graphicsPipelineCreate(VkPipeline*                             outPipeline,
                             VkPipelineDepthStencilStateCreateInfo*  inDepthStencil,
                             VkRenderPass*                           inRenderPass,
                             uint32_t                                inSubPass,
-                            VkPipelineCreateFlags                   inFlags)
+                            VkPipelineCreateFlags                   inFlags,
+                            VkPipeline                              inBasePipeline)
 {
 
 
@@ -814,6 +792,11 @@ void graphicsPipelineCreate(VkPipeline*                             outPipeline,
   pipeline.renderPass          = *inRenderPass;
   pipeline.subpass             = inSubPass;
   pipeline.flags               = inFlags;
+  if(inBasePipeline)
+  {
+    pipeline.basePipelineHandle = inBasePipeline;
+    pipeline.basePipelineIndex  = -1;
+  }
 
   VkPipelineDynamicStateCreateInfo dynStateInfo;
   VkDynamicState                   dynStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
@@ -840,27 +823,18 @@ void graphicsPipelineCreate(VkPipeline*                             outPipeline,
 
 void createShader(const char* fileName, VkShaderStageFlagBits inStage, VkShaderModule* outModule)
 {
-  char*  buf = NULL;
-  size_t sz;
+  VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
 
-  VkResult err;
+  std::string buf = nvh::loadFile(fileName, true);
 
-  VkShaderModuleCreateInfo moduleInfo;
-  memset(&moduleInfo, 0, sizeof(moduleInfo));
-  moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  moduleInfo.pNext = NULL;
+  LOGI("Shader Source : %s\n", buf.c_str());
 
-
-  loadTextFile(fileName, &buf, sz);
-
-  LOGI("Shader Source : %s\n", buf);
-
-  moduleInfo.codeSize = sz + 1;
-  moduleInfo.pCode    = (const uint32_t*)buf;
+  moduleInfo.codeSize = buf.size();
+  moduleInfo.pCode    = reinterpret_cast<const uint32_t*>(buf.data());
   moduleInfo.flags    = 0;
 
 
-  err = vkCreateShaderModule(getDefaultDevice(), &moduleInfo, NULL, outModule);
+  VkResult err = vkCreateShaderModule(getDefaultDevice(), &moduleInfo, NULL, outModule);
   if(err != VK_SUCCESS)
   {
     LOGE("Could not create shader module.\n");
@@ -936,8 +910,7 @@ void pipelineLayoutCreate(VkPipelineLayout*      outLayout,
 
   VkPipelineLayoutCreateInfo layoutInfo;
   pipelineLayoutCreateInfo(&layoutInfo, inCount, inLayouts, inPushConstantCount, inPushConstantRanges);
-  VKA_CHECK_ERROR(vkCreatePipelineLayout(getDefaultDevice(), &layoutInfo, NULL, outLayout),
-                  "Could not create pipeline layout.\n");
+  VKA_CHECK_ERROR(vkCreatePipelineLayout(getDefaultDevice(), &layoutInfo, NULL, outLayout), "Could not create pipeline layout.\n");
 }
 
 void imageViewCreateInfo(VkImageViewCreateInfo* outInfo,
@@ -988,8 +961,7 @@ void imageViewCreate(VkImageView*       outView,
   imageViewCreateInfo(&imageInfo, inImage, inType, inFormat, inAspect, inArraySizse, inBaseArraySlice, inR, inG, inB, inA);
 
 
-  VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &imageInfo, NULL, outView),
-                  "Could not create image view for texture.\n");
+  VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &imageInfo, NULL, outView), "Could not create image view for texture.\n");
 }
 
 void samplerCreateInfo(VkSamplerCreateInfo* outInfo,
@@ -1047,8 +1019,7 @@ void samplerCreate(VkSampler*           outSampler,
   samplerCreateInfo(&samplerInfo, inMagFilter, inMinFilter, inCompareEnable, inCompareOp, inAddressU, inAddressV,
                     inAddressW, inMipMode, inMinLod, inMaxLod, inMipLodBias, inMaxAnsisotropy, inBorderColor);
 
-  VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &samplerInfo, NULL, outSampler),
-                  "Could not create sampler for image texture.\n");
+  VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &samplerInfo, NULL, outSampler), "Could not create sampler for image texture.\n");
 }
 
 void deviceCreateInfo(VkDeviceCreateInfo*       outInfo,

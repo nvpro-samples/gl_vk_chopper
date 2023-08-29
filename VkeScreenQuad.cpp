@@ -36,9 +36,6 @@ void VkeScreenQuad::initQuadData()
   m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
   initBackingStore(sizeof(QuadUniform));
 
-  float ww = 1800.0;
-  float hh = 1000.0;
-
   m_backing_store->view_matrix.identity();
 
   initVKBufferData();

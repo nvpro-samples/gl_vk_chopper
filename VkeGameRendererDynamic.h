@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include "VkeTerrainQuad.h"
 
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <stdint.h>
 #include <thread>
@@ -38,8 +39,6 @@
 class VkeCamera;
 
 #define COMMAND_BUFFER_COUNT 2
-
-const float r2d = 180 / (3.14159265359);
 
 struct FlightPath
 {
@@ -59,8 +58,9 @@ struct FlightPath
       , m_end_position(0.0, 0.0)
       , m_position(0.0, 0.0)
       , m_direction(0.0, 1.0)
-      , m_velocity(0.01)
-      , m_altitude(10.0)
+      , m_velocity(0.01f)
+      , m_altitude(10.0f)
+      , m_t(0.0f)
   {
   }
 
@@ -97,7 +97,7 @@ struct FlightPath
 
     inMat->identity();
     inMat->rotate(yRot, nvmath::vec3f(0.0, 1.0, 0.0));
-    inMat->rotate(-90 / r2d, nvmath::vec3f(1.0, 0.0, 0.0));
+    inMat->rotate(-90.f * nv_to_rad, nvmath::vec3f(1.0, 0.0, 0.0));
     *inMat = rotMat * (*inMat);
   }
 };
@@ -115,7 +115,7 @@ public:
   void initDescriptorPool();
   void initDescriptor();
   void initCommandPool();
-  void initDrawCommands(const uint32_t inCount, const uint32_t inBufferIndex);
+  void initDrawCommands(const uint32_t inCount, const uint32_t inBufferIndex, VkRenderPass parentRenderPass, uint32_t viewportWidth, uint32_t viewportHeight);
 
 private:
   vkeGameRendererDynamic* m_renderer;
@@ -188,8 +188,7 @@ protected:
   VkCommandBuffer m_primary_commands[2];
   VkCommandBuffer m_update_commands[2];
 
-  FlightPath*  m_test_fp;
-  FlightPath** m_flight_paths;
+  std::vector<std::unique_ptr<FlightPath>> m_flight_paths;
 
   uint32_t m_current_buffer_index;
 
@@ -219,8 +218,7 @@ protected:
   VkDescriptorBufferInfo m_transforms_descriptor;
   /**/
 
-
-  VkeDrawCall** m_draw_calls;
+  std::vector<std::unique_ptr<VkeDrawCall>> m_draw_calls;
 
   VkDescriptorSet       m_scene_descriptor_set;
   VkDescriptorSetLayout m_scene_descriptor_layout;

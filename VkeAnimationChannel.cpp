@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,9 +49,9 @@ VkeAnimationKey* VkeAnimationChannel::newKey(double& inTime, nvmath::vec4f& inDa
 
 nvmath::vec4f cubicLerp(nvmath::vec4f inA, nvmath::vec4f inB, float inT)
 {
-  float c = (3.0 - 2.0 * inT) * inT * inT;
+  float c = (3.0f - 2.0f * inT) * inT * inT;
 
-  inA *= (float)(1.0 - c);
+  inA *= (float)(1.0f - c);
   inB *= (float)c;
   nvmath::vec4f outValue = inA;
   outValue += inB;
@@ -60,7 +60,7 @@ nvmath::vec4f cubicLerp(nvmath::vec4f inA, nvmath::vec4f inB, float inT)
 
 nvmath::quatf cubicLerp(nvmath::quatf inA, nvmath::quatf inB, float inT)
 {
-  float c = (3.0 - 2.0 * inT) * inT * inT;
+  float c = (3.0f - 2.0f * inT) * inT * inT;
   return nvmath::slerp_quats(c, inA, inB);
 }
 
@@ -90,7 +90,7 @@ nvmath::quatf VkeAnimationChannel::currentQuatValue()
     return qValue;
   }
 
-  double timeDelta = pair.high->getTime() - pair.low->getTime();
+  float timeDelta = float(pair.high->getTime() - pair.low->getTime());
   if(timeDelta == 0.0)
   {
     nvmath::vec4f vValue = pair.low->getValue();
@@ -98,9 +98,9 @@ nvmath::quatf VkeAnimationChannel::currentQuatValue()
     return qValue;
   }
 
-  double durationDelta = curTime - pair.low->getTime();
+  float durationDelta = float(curTime - pair.low->getTime());
 
-  double timeScale = durationDelta / timeDelta;
+  float timeScale = durationDelta / timeDelta;
 
   nvmath::vec4f lowVal  = pair.low->getValue();
   nvmath::vec4f highVal = pair.high->getValue();
@@ -131,13 +131,13 @@ nvmath::vec4f VkeAnimationChannel::currentValue()
   if(!pair.low)
     return pair.high->getValue();
 
-  double timeDelta = pair.high->getTime() - pair.low->getTime();
+  float timeDelta = float(pair.high->getTime() - pair.low->getTime());
   if(timeDelta == 0.0)
     return pair.low->getValue();
 
-  double durationDelta = curTime - pair.low->getTime();
+  float durationDelta = float(curTime - pair.low->getTime());
 
-  double timeScale = durationDelta / timeDelta;
+  float timeScale = durationDelta / timeDelta;
 
   nvmath::vec4f lowVal  = pair.low->getValue();
   nvmath::vec4f highVal = pair.high->getValue();

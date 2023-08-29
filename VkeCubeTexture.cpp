@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,35 +34,17 @@
 #endif
 
 VkeCubeTexture::VkeCubeTexture()
-    : m_width(0)
-    , m_height(0)
-    , m_mip_level(0)
-    , m_id(0)
-    , m_ready(false)
+    : m_id(0)
 {
-  initTexture();
 }
 
 VkeCubeTexture::VkeCubeTexture(const ID& inID)
-    : m_width(0)
-    , m_height(0)
-    , m_mip_level(0)
-    , m_id(0)
-    , m_ready(false)
+    : m_id(inID)
 {
-  initTexture();
 }
 
 
 VkeCubeTexture::~VkeCubeTexture() {}
-
-void VkeCubeTexture::initTexture()
-{
-  m_tiling       = VK_IMAGE_TILING_LINEAR;
-  m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-  m_usage_flags  = VK_IMAGE_USAGE_SAMPLED_BIT;
-  m_format       = VK_FORMAT_R8G8B8A8_UNORM;
-}
 
 void VkeCubeTexture::loadCubeDDS(const char* inFile)
 {
@@ -99,13 +81,16 @@ void VkeCubeTexture::loadCubeDDS(const char* inFile)
     LOGI("loaded texture image %s\n", filePath.c_str());
   }
 
-  uint32_t imgW     = ddsImage.get_width();
-  uint32_t imgH     = ddsImage.get_height();
-  uint32_t comCount = ddsImage.get_components();
-  uint32_t fmt      = ddsImage.get_format();
+  uint32_t imgW = ddsImage.get_width();
+  uint32_t imgH = ddsImage.get_height();
+  uint32_t fmt  = ddsImage.get_format();
 
   bool isCube = ddsImage.is_cubemap();
-  bool isComp = ddsImage.is_compressed();
+  if(!isCube)
+  {
+    LOGE("The texture at %s must be a cubemap.\n", inFile);
+    exit(1);
+  }
 
   VkFormat vkFmt = VK_FORMAT_R8G8B8A8_UNORM;
 
@@ -145,54 +130,37 @@ void VkeCubeTexture::loadCubeDDS(const char* inFile)
   imageCreateAndBind(&m_data.image, &m_data.memory, m_format, VK_IMAGE_TYPE_2D, m_width, m_height, 1, 6, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                      (VkImageUsageFlagBits)(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_IMAGE_TILING_OPTIMAL);
 
+  // Staging buffer used to upload data to the cube map
   VkBuffer       cubeMapBuffer;
   VkDeviceMemory cubeMapMem;
 
-  bufferCreate(&cubeMapBuffer, m_width * m_height * 3 * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+  const size_t faceSizeBytes = ddsImage.get_mipmap(m_mip_level).get_size();
+  bufferCreate(&cubeMapBuffer, faceSizeBytes * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
   bufferAlloc(&cubeMapBuffer, &cubeMapMem, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 
   if(m_memory_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
   {
-    imageSetLayoutBarrier(cmdID, queueName, m_data.image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED,
-                          VK_IMAGE_LAYOUT_GENERAL);
+    VkImageSubresourceRange allFaces;
+    imageSubresourceRange(&allFaces, VK_IMAGE_ASPECT_COLOR_BIT, 6, 0, 1, m_mip_level);
+    imageBarrierCreate(&cmd, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_data.image, allFaces,
+                       VK_ACCESS_NONE, VK_ACCESS_TRANSFER_WRITE_BIT);
+    m_data.imageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
+    char* data = nullptr;
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), cubeMapMem, 0, faceSizeBytes * 6, 0, (void**)&data),
+                    "Could not map staging buffer memory.\n");
     for(uint32_t i = 0; i < 6; ++i)
     {
-
-      void*               data = NULL;
-      VkSubresourceLayout layout;
-      VkImageSubresource  subres;
-      subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      subres.mipLevel   = m_mip_level;
-      subres.arrayLayer = i;
-      vkGetImageSubresourceLayout(getDefaultDevice(), m_data.image, &subres, &layout);
-
-
-      VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), cubeMapMem, layout.offset, layout.size, 0, &data),
-                      "Could not map memory for image.\n");
-
       const nv_dds::CTexture& mipmap = ddsImage.get_cubemap_face(i);
-
-      memcpy(data, (void*)mipmap, layout.size);
-
-
-      vkUnmapMemory(getDefaultDevice(), cubeMapMem);
+      memcpy(data + i * faceSizeBytes, (void*)mipmap, faceSizeBytes);
     }
+    vkUnmapMemory(getDefaultDevice(), cubeMapMem);
 
-    VkBufferImageCopy biCpyRgn[6];
-
-
+    VkBufferImageCopy biCpyRgn[6]{};
     for(uint32_t k = 0; k < 6; ++k)
     {
-      VkSubresourceLayout layout;
-      VkImageSubresource  subres;
-      subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      subres.mipLevel   = m_mip_level;
-      subres.arrayLayer = k;
-      vkGetImageSubresourceLayout(getDefaultDevice(), m_data.image, &subres, &layout);
-
-      biCpyRgn[k].bufferOffset                    = layout.offset;
+      biCpyRgn[k].bufferOffset                    = k * faceSizeBytes;
       biCpyRgn[k].bufferImageHeight               = 0;
       biCpyRgn[k].bufferRowLength                 = 0;
       biCpyRgn[k].imageExtent.width               = m_width;
@@ -204,18 +172,19 @@ void VkeCubeTexture::loadCubeDDS(const char* inFile)
       biCpyRgn[k].imageSubresource.baseArrayLayer = k;
       biCpyRgn[k].imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
       biCpyRgn[k].imageSubresource.layerCount     = 1;
-      biCpyRgn[k].imageSubresource.mipLevel       = 0;
+      biCpyRgn[k].imageSubresource.mipLevel       = m_mip_level;
     }
 
     VkFence           copyFence;
     VkFenceCreateInfo fenceInfo;
     memset(&fenceInfo, 0, sizeof(fenceInfo));
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-
     vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &copyFence);
 
     vkCmdCopyBufferToImage(cmd, cubeMapBuffer, m_data.image, m_data.imageLayout, 6, biCpyRgn);
+    imageBarrierCreate(&cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                       m_data.image, allFaces, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT);
+    m_data.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     queue->flushCommandBuffer(cmdID, &copyFence);
 
     vkWaitForFences(device->getVKDevice(), 1, &copyFence, VK_TRUE, 100000000000);
@@ -251,165 +220,16 @@ void VkeCubeTexture::loadCubeDDS(const char* inFile)
 
   view.subresourceRange.baseArrayLayer = 0;
   view.subresourceRange.levelCount     = 1;
-  view.subresourceRange.baseMipLevel   = 0;
+  view.subresourceRange.baseMipLevel   = m_mip_level;
   view.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
   view.subresourceRange.layerCount     = 6;
 
-  VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &sampler, NULL, &m_data.sampler),
-                  "Could not create sampler for image texture.\n");
+  VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &sampler, NULL, &m_data.sampler), "Could not create sampler for image texture.\n");
 
   view.image = m_data.image;
 
-  VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &view, NULL, &m_data.view),
-                  "Could not create image view for texture.\n");
+  VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &view, NULL, &m_data.view), "Could not create image view for texture.\n");
 }
-
-#ifdef USE_LIB_PNG
-void VkeCubeTexture::loadTextureFiles(const char** inPath)
-{
-
-  bool imagesOK = true;
-  VKA_INFO_MSG("Loading Cube Texture.\n");
-  for(uint32_t i = 0; i < 6; ++i)
-  {
-    if(!loadTexture(inPath[i], NULL, NULL, &m_width, &m_height))
-    {
-      VKA_ERROR_MSG("Error loading texture image.\n");
-      LOGE("Texture : %d not available (%s).\n", i, inPath[i]);
-      return;
-    }
-  }
-
-  VulkanDC::Device::Queue::Name            queueName = "DEFAULT_GRAPHICS_QUEUE";
-  VulkanDC::Device::Queue::CommandBufferID cmdID     = INIT_COMMAND_ID;
-  VulkanDC*                                dc        = VulkanDC::Get();
-  VulkanDC::Device*                        device    = dc->getDefaultDevice();
-  VulkanDC::Device::Queue*                 queue     = device->getQueue(queueName);
-  VkCommandBuffer                          cmd       = VK_NULL_HANDLE;
-
-  queue->beginCommandBuffer(cmdID, &cmd, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
-  imageCreateAndBind(&m_data.image, &m_data.memory, m_format, VK_IMAGE_TYPE_2D, m_width, m_height, 1, 6, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                     (VkImageUsageFlagBits)(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_IMAGE_TILING_OPTIMAL);
-
-  VkBuffer       cubeMapBuffer;
-  VkDeviceMemory cubeMapMem;
-
-  bufferCreate(&cubeMapBuffer, m_width * m_height * 4 * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-  bufferAlloc(&cubeMapBuffer, &cubeMapMem, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-  VkDeviceSize dSize    = m_width * m_height * 4;
-  uint32_t     rowPitch = m_width * 4;
-
-  if(m_memory_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-  {
-    imageSetLayoutBarrier(cmdID, queueName, m_data.image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED,
-                          VK_IMAGE_LAYOUT_GENERAL);
-
-    for(uint32_t i = 0; i < 6; ++i)
-    {
-
-      void*        data = NULL;
-      VkDeviceSize ofst = dSize * i;
-
-      VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), cubeMapMem, ofst, dSize, 0, &data),
-                      "Could not map memory for image.\n");
-
-      if(!loadTexture(inPath[i], (uint8_t**)&data, rowPitch, &m_width, &m_height))
-      {
-        VKA_ERROR_MSG("Could not load final image.\n");
-      }
-
-      vkUnmapMemory(getDefaultDevice(), cubeMapMem);
-    }
-
-    VkBufferImageCopy biCpyRgn[6];
-
-
-    for(uint32_t k = 0; k < 6; ++k)
-    {
-      VkDeviceSize ofst = dSize * k;
-
-      biCpyRgn[k].bufferOffset                    = ofst;
-      biCpyRgn[k].bufferImageHeight               = 0;
-      biCpyRgn[k].bufferRowLength                 = 0;
-      biCpyRgn[k].imageExtent.width               = m_width;
-      biCpyRgn[k].imageExtent.height              = m_height;
-      biCpyRgn[k].imageExtent.depth               = 1;
-      biCpyRgn[k].imageOffset.x                   = 0;
-      biCpyRgn[k].imageOffset.y                   = 0;
-      biCpyRgn[k].imageOffset.z                   = 0;
-      biCpyRgn[k].imageSubresource.baseArrayLayer = k;
-      biCpyRgn[k].imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-      biCpyRgn[k].imageSubresource.layerCount     = 1;
-      biCpyRgn[k].imageSubresource.mipLevel       = 0;
-    }
-
-    VkFence           copyFence;
-    VkFenceCreateInfo fenceInfo;
-    memset(&fenceInfo, 0, sizeof(fenceInfo));
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-
-    vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &copyFence);
-
-    vkCmdCopyBufferToImage(cmd, cubeMapBuffer, m_data.image, m_data.imageLayout, 6, biCpyRgn);
-    queue->flushCommandBuffer(cmdID, &copyFence);
-
-    vkWaitForFences(device->getVKDevice(), 1, &copyFence, VK_TRUE, 100000000000);
-
-    vkDestroyBuffer(device->getVKDevice(), cubeMapBuffer, NULL);
-    vkFreeMemory(device->getVKDevice(), cubeMapMem, NULL);
-  }
-
-
-  VkSamplerCreateInfo sampler;
-
-  sampler.sType         = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-  sampler.pNext         = NULL;
-  sampler.magFilter     = VK_FILTER_NEAREST;
-  sampler.minFilter     = VK_FILTER_NEAREST;
-  sampler.mipmapMode    = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-  sampler.addressModeU  = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-  sampler.addressModeU  = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-  sampler.addressModeU  = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-  sampler.mipLodBias    = 0.0f;
-  sampler.maxAnisotropy = 1;
-  sampler.compareOp     = VK_COMPARE_OP_NEVER;
-  sampler.minLod        = 0.0f;
-  sampler.maxLod        = 0.0f;
-
-  sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
-  VkImageViewCreateInfo view;
-  view.sType      = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view.pNext      = NULL;
-  view.viewType   = VK_IMAGE_VIEW_TYPE_CUBE;
-  view.format     = m_format;
-  view.components = {
-
-      VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-
-  view.subresourceRange                = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 0};
-  view.subresourceRange.baseArrayLayer = 0;
-  view.subresourceRange.levelCount     = 1;
-  view.subresourceRange.baseMipLevel   = 0;
-  view.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-  view.subresourceRange.layerCount     = 1;
-
-  VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &sampler, NULL, &m_data.sampler),
-                  "Could not create sampler for image texture.\n");
-
-  view.image = m_data.image;
-
-  VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &view, NULL, &m_data.view),
-                  "Could not create image view for texture.\n");
-
-
-  VKA_INFO_MSG("Created CUBE Image Texture.\n");
-}
-
-#endif
 
 VkeCubeTexture::List::List() {}
 VkeCubeTexture::List::~List() {}

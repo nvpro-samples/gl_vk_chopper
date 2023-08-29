@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,6 @@
 
 VkeCamera::VkeCamera()
     : VkeBuffer()
-    , m_id(0)
-    , m_near(VKE_DEFAULT_CAMERA_NEAR_PLANE)
-    , m_far(VKE_DEFAULT_CAMERA_FAR_PLANE)
-    , m_fov(VKE_DEFAULT_CAMERA_FOV)
-    , m_viewport(VKE_DEFAULT_CAMERA_VIEWPORT)
-    , m_position(0.0, 0.0, 0.0)
-    , m_rotation(0.0, 0.0, 0.0)
-    , m_projection_needs_update(true)
-    , m_transform_needs_update(true)
-    , m_view_projection_needs_update(true)
-    , m_use_look_at(false)
-    , m_time(0.0)
 {
   initCameraData();
 }
@@ -43,17 +31,6 @@ VkeCamera::VkeCamera()
 VkeCamera::VkeCamera(const VkeCamera::ID& inID)
     : VkeBuffer()
     , m_id(inID)
-    , m_near(VKE_DEFAULT_CAMERA_NEAR_PLANE)
-    , m_far(VKE_DEFAULT_CAMERA_FAR_PLANE)
-    , m_fov(VKE_DEFAULT_CAMERA_FOV)
-    , m_viewport(VKE_DEFAULT_CAMERA_VIEWPORT)
-    , m_position(0.0, 0.0, 0.0)
-    , m_rotation(0.0, 0.0, 0.0)
-    , m_projection_needs_update(true)
-    , m_transform_needs_update(true)
-    , m_view_projection_needs_update(true)
-    , m_use_look_at(false)
-    , m_time(0.0)
 {
   initCameraData();
 }
@@ -61,17 +38,7 @@ VkeCamera::VkeCamera(const VkeCamera::ID& inID)
 VkeCamera::VkeCamera(const VkeCamera::ID& inID, const float inX, const float inY, const float inZ)
     : VkeBuffer()
     , m_id(inID)
-    , m_near(VKE_DEFAULT_CAMERA_NEAR_PLANE)
-    , m_far(VKE_DEFAULT_CAMERA_FAR_PLANE)
-    , m_fov(VKE_DEFAULT_CAMERA_FOV)
-    , m_viewport(VKE_DEFAULT_CAMERA_VIEWPORT)
     , m_position(inX, inY, inZ)
-    , m_rotation(0.0, 0.0, 0.0)
-    , m_projection_needs_update(true)
-    , m_transform_needs_update(true)
-    , m_view_projection_needs_update(true)
-    , m_use_look_at(false)
-    , m_time(0.0)
 {
   initCameraData();
 }
@@ -83,7 +50,7 @@ void VkeCamera::initCameraData()
   m_projection_needs_update      = true;
   m_transform_needs_update       = true;
   m_view_projection_needs_update = true;
-  m_usage_flags                  = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+  m_usage_flags                  = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
   m_memory_flags                 = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
   initBackingStore(sizeof(VkeCameraUniform));
@@ -145,7 +112,7 @@ void VkeCamera::updateViewProjection()
   m_backing_store->view_matrix.a13 = 0.0;
   m_backing_store->view_matrix.a23 = 0.0;
 
-  m_time += 0.01;
+  m_time += 0.01f;
 
   m_backing_store->camera_position = nvmath::vec4f(m_position, m_time);
 

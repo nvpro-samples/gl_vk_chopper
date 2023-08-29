@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@
 #include "nvpwindow.hpp"
 #include <iostream>
 
-#if defined(WIN32)
-#else
+#if !defined(WIN32)
 
 void fopen_s(FILE** inFile, const char* inPath, const char* inPermissions)
 {
@@ -41,8 +40,7 @@ void fread_s(void* inBuffer, size_t inBufSize, size_t inSize, size_t inCount, FI
 
 void readVKSFile(VKSFile* inFile)
 {
-
-  FILE* fp;
+  FILE* fp = nullptr;
 
   std::vector<std::string> searchPaths;
   searchPaths.push_back(std::string("."));
@@ -136,30 +134,30 @@ void readVKSFile(VKSFile* inFile)
 
   if(textureCount > 0)
   {
-    VKSTextureRecord* textures = (VKSTextureRecord*)malloc(sizeof(VKSTextureRecord) * textureCount);
-    fread_s(textures, sizeof(VKSTextureRecord) * textureCount, sizeof(VKSTextureRecord), textureCount, fp);
+    std::vector<VKSTextureRecord> textures(textureCount);
+    fread_s(textures.data(), sizeof(VKSTextureRecord) * textureCount, sizeof(VKSTextureRecord), textureCount, fp);
 
     inFile->textures.reserve(textureCount);
-    inFile->textures.assign(textures, textures + textureCount);
+    inFile->textures.assign(textures.data(), textures.data() + textureCount);
   }
 
   fread_s(&inFile->animationNodeCount, sizeof(uint32_t), sizeof(uint32_t), 1, fp);
 
-  VKSAnimationNodeRecord* animNodes = (VKSAnimationNodeRecord*)malloc(sizeof(VKSAnimationNodeRecord) * inFile->animationNodeCount);
-  fread_s(animNodes, sizeof(VKSAnimationNodeRecord) * inFile->animationNodeCount, sizeof(VKSAnimationNodeRecord),
+  std::vector<VKSAnimationNodeRecord> animNodes(inFile->animationNodeCount);
+  fread_s(animNodes.data(), sizeof(VKSAnimationNodeRecord) * inFile->animationNodeCount, sizeof(VKSAnimationNodeRecord),
           inFile->animationNodeCount, fp);
 
   inFile->animationNodes.reserve(inFile->animationNodeCount);
-  inFile->animationNodes.assign(animNodes, animNodes + inFile->animationNodeCount);
+  inFile->animationNodes.assign(animNodes.data(), animNodes.data() + inFile->animationNodeCount);
 
   fread_s(&inFile->animationKeyCount, sizeof(uint32_t), sizeof(uint32_t), 1, fp);
 
-  VKSAnimationKeyRecord* animKeys = (VKSAnimationKeyRecord*)malloc(sizeof(VKSAnimationKeyRecord) * inFile->animationKeyCount);
-  fread_s(animKeys, sizeof(VKSAnimationKeyRecord) * inFile->animationKeyCount, sizeof(VKSAnimationKeyRecord),
+  std::vector<VKSAnimationKeyRecord> animKeys(inFile->animationKeyCount);
+  fread_s(animKeys.data(), sizeof(VKSAnimationKeyRecord) * inFile->animationKeyCount, sizeof(VKSAnimationKeyRecord),
           inFile->animationKeyCount, fp);
 
   inFile->animationKeys.reserve(inFile->animationKeyCount);
-  inFile->animationKeys.assign(animKeys, animKeys + inFile->animationKeyCount);
+  inFile->animationKeys.assign(animKeys.data(), animKeys.data() + inFile->animationKeyCount);
 
 
   fclose(fp);

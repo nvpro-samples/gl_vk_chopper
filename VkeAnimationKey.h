@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,14 @@ public:
   typedef uint32_t ID;
   typedef uint32_t Count;
 
-  VkeAnimationKey() {}
+  VkeAnimationKey()
+      : m_value(0.f, 0.f, 0.f, 0.f)
+      , m_time(0.)
+  {
+  }
   VkeAnimationKey(double& inTime, nvmath::vec4f& inData)
-      : m_time(inTime)
-      , m_value(inData)
+      : m_value(inData)
+      , m_time(inTime)
   {
   }
   ~VkeAnimationKey() {}

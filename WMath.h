@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -725,24 +725,17 @@ namespace bounds {
 
 struct BBox
 {
-  Vec4f m_min;
-  Vec4f m_max;
+  Vec4f m_min{FLT_MAX, FLT_MAX, FLT_MAX, 0.0f};
+  Vec4f m_max{FLT_MIN, FLT_MIN, FLT_MIN, 0.0f};
 
-  BBox()
-  {
-    for(uint32_t i = 0; i < 3; ++i)
-    {
-      m_min.m_data[i] = FLT_MAX;
-      m_min.m_data[i] = FLT_MIN;
-    }
-  }
+  BBox() {}
 
   void operator+=(const Vec4f& inV)
   {
     for(uint32_t i = 0; i < 3; ++i)
     {
-      m_min.m_data[i] = fmin(m_min.m_data[i], inV.m_data[i]);
-      m_max.m_data[i] = fmax(m_min.m_data[i], inV.m_data[i]);
+      m_min.m_data[i] = fminf(m_min.m_data[i], inV.m_data[i]);
+      m_max.m_data[i] = fmaxf(m_min.m_data[i], inV.m_data[i]);
     }
   }
 

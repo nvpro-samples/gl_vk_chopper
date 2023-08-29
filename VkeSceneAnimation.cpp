@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@
 #include <float.h>
 
 VkeSceneAnimation::VkeSceneAnimation()
-    : m_current_time(0.0)
-    , m_duration(0.0)
+    : m_duration(0.0)
     , m_start_time(DBL_MAX)
     , m_end_time(DBL_MIN)
+    , m_current_time(0.0)
 {
 }
 

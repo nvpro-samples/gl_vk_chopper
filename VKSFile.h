@@ -100,8 +100,8 @@ struct VKSAnimationNodeRecord
 
 struct VKSAnimationKeyRecord
 {
-  nvmath::vec4f key;
-  double        time;
+  nvmath::vec4f key{0.f, 0.f, 0.f, 0.f};
+  double        time = 0.;
 };
 
 
@@ -109,8 +109,8 @@ struct VKSFile
 {
   std::string                     inputFile;
   std::string                     outputFile;
-  int                             fileHandle;
-  VKSFileHeader                   header;
+  int                             fileHandle = 0;
+  VKSFileHeader                   header{};
   std::vector<VKSNodeRecord>      nodes;
   std::vector<VKSMeshRecord>      meshes;
   std::vector<VKSMaterialRecord>  materials;
@@ -118,14 +118,14 @@ struct VKSFile
   std::vector<VKSTextureRecord>   textures;
   std::vector<float>              vertices;
   std::vector<uint32_t>           indices;
-  uint32_t                        indexCount;
-  uint32_t                        vertexCount;
+  uint32_t                        indexCount  = 0;
+  uint32_t                        vertexCount = 0;
 
   std::vector<VKSAnimationNodeRecord> animationNodes;
   std::vector<VKSAnimationKeyRecord>  animationKeys;
 
-  uint32_t animationNodeCount;
-  uint32_t animationKeyCount;
+  uint32_t animationNodeCount = 0;
+  uint32_t animationKeyCount  = 0;
 };
 
 

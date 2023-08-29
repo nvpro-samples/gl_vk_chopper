@@ -54,16 +54,10 @@ file(GLOB IMAGE_FILES images/*.*)
 #####################################################################################
 # Executable
 #
-if(WIN32 AND NOT GLUT_FOUND)
-  add_definitions(/wd4244) #remove double to float conversion warning
-  add_definitions(/wd4305) #remove double to float truncation warning
-endif()
-
 add_executable(${PROJNAME} ${SOURCE_FILES} ${COMMON_SOURCE_FILES} ${PACKAGE_SOURCE_FILES} ${GLSL_FILES})
 
 if(UNIX)
-  add_definitions(-g -std=c++11)
-  set(UNIXLINKLIBS dl png assimp pthread)
+  set(UNIXLINKLIBS dl pthread)
 else()
   set(UNIXLINKLIBS)
 endif()

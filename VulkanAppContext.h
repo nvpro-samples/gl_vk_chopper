@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,24 +79,27 @@ public:
   float getOpacity(uint32_t inMatID) { return m_materials.getMaterial(inMatID)->getBackingStore()->opacity; }
 
 private:
-  VkInstance m_vk_instance;
+  VkInstance m_vk_instance = nullptr;
+#ifndef NDEBUG
+  VkDebugUtilsMessengerEXT m_debug_messenger = VK_NULL_HANDLE;
+#endif
 
-  uint32_t m_width;
-  uint32_t m_height;
+  uint32_t m_width  = 1024;
+  uint32_t m_height = 768;
 
 
-  VkFormat          m_surface_format;
-  VkeRenderer*      m_renderer;
+  VkFormat          m_surface_format = VK_FORMAT_UNDEFINED;
+  VkeRenderer*      m_renderer       = nullptr;
   VkeNodeData::List m_node_data;
   VkeMesh::List     m_mesh_data;
-  Scene*            m_scene_graph;
+  Scene*            m_scene_graph = nullptr;
   VkeMaterial::List m_materials;
-  VkeNodeData*      m_rotor_node;
+  VkeNodeData*      m_rotor_node = nullptr;
 
-  float                                          m_rot_y;
-  std::chrono::high_resolution_clock::time_point m_clock_at_start;
+  float                                          m_rot_y = 0.0f;
+  std::chrono::high_resolution_clock::time_point m_clock_at_start{};
 
-  bool              m_ready;
+  bool              m_ready = false;
   VkeSceneAnimation m_animation;
 
   VkeVBO m_global_vbo;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,12 @@
 #include "VkeAnimationNode.h"
 #include "Node.h"
 
-VkeAnimationNode::VkeAnimationNode()
-    : m_scene_node(NULL)
-    , m_parent(NULL)
-{
-}
+VkeAnimationNode::VkeAnimationNode() {}
 
 VkeAnimationNode::VkeAnimationNode(VkeAnimationNode::Name& inName, VkeSceneAnimation* inParent)
-    : m_name(inName)
-    , m_scene_node(NULL)
-    , m_parent(inParent)
+    : m_parent(inParent)
+    , m_name(inName)
 {
-
   m_position.setParent(inParent);
   m_rotation.setParent(inParent);
   m_scale.setParent(inParent);

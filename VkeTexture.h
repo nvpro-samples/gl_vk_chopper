@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,11 @@ public:
 
   struct Data
   {
-    VkSampler      sampler;
-    VkImage        image;
-    VkImageLayout  imageLayout;
-    VkDeviceMemory memory;
-    VkImageView    view;
+    VkSampler      sampler     = VK_NULL_HANDLE;
+    VkImage        image       = VK_NULL_HANDLE;
+    VkImageLayout  imageLayout = {};
+    VkDeviceMemory memory      = VK_NULL_HANDLE;
+    VkImageView    view        = VK_NULL_HANDLE;
   };
 
   class List
@@ -73,14 +73,7 @@ public:
     std::vector<VkeTexture::ID> m_deleted_keys;
   };
 
-
-  void initTexture();
-
   void loadDDSTextureFile(const char* inFile);
-
-#ifdef USE_LIB_PNG
-  void loadTextureFile(const char* inFile);
-#endif
 
   void loadTextureFloatData(float* inData, uint32_t inWidth, uint32_t inHeight, uint32_t inCompCount = 4);
 
@@ -100,19 +93,19 @@ public:
 
 
 private:
-  ID m_id;
+  ID m_id = 0;
 
-  int32_t m_width;
-  int32_t m_height;
-  bool    m_ready;
+  int32_t m_width  = 0;
+  int32_t m_height = 0;
+  bool    m_ready  = false;
 
-  VkImageTiling     m_tiling;
-  VkImageUsageFlags m_usage_flags;
-  VkFlags           m_memory_flags;
-  VkFormat          m_format;
+  VkImageTiling     m_tiling       = VK_IMAGE_TILING_LINEAR;
+  VkImageUsageFlags m_usage_flags  = VK_IMAGE_USAGE_SAMPLED_BIT;
+  VkFlags           m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+  VkFormat          m_format       = VK_FORMAT_R8G8B8A8_UNORM;
 
   Data     m_data;
-  uint32_t m_mip_level;
+  uint32_t m_mip_level = 0;
 };
 
 #endif

@@ -51,8 +51,6 @@ extern bool vulkanInitLibrary();
 namespace pathclipping {
 int const SAMPLE_SIZE_WIDTH(1024);
 int const SAMPLE_SIZE_HEIGHT(768);
-int const SAMPLE_MAJOR_VERSION(4);
-int const SAMPLE_MINOR_VERSION(5);
 
 int const PERLIN_GRID_U_SIZE(128);
 int const PERLIN_GRID_V_SIZE(128);
@@ -93,24 +91,15 @@ class Sample : public nvgl::AppWindowProfilerGL
 
   struct Tweak
   {
-    Tweak()
-        : samples(1)
-        , curFile(0)
-        , cmdBufferMode(0)
-        , drawReflections(true)
-        , drawShadows(false)
-        , playAnimation(true)
-        , drawClips(false)
-    {
-    }
+    Tweak() {}
 
-    int  samples;
-    int  cmdBufferMode;
-    int  curFile;
-    bool drawClips;
-    bool drawReflections;
-    bool drawShadows;
-    bool playAnimation;
+    int  samples         = 1;
+    int  cmdBufferMode   = 0;
+    int  curFile         = 0;
+    bool drawClips       = false;
+    bool drawReflections = true;
+    bool drawShadows     = false;
+    bool playAnimation   = true;
   };
 
   Tweak tweak;
@@ -118,12 +107,13 @@ class Sample : public nvgl::AppWindowProfilerGL
 
   struct
   {
-    GLuint scene;
+    GLuint scene = 0;
   } fbos;
 
   struct
   {
-    GLuint scene_color, scene_depthstencil;
+    GLuint scene_color        = 0;
+    GLuint scene_depthstencil = 0;
   } textures;
 
 
@@ -146,8 +136,6 @@ bool Sample::initProgram()
 {
   //No programs used for this demo.
 
-  bool validated(true);
-
   /*
 		Programs for Gazelle are managed by the App Context.
 		Just return true here.
@@ -169,6 +157,8 @@ bool Sample::initVulkan()
 		Load the programs
 	 */
   bool progsValid = ctxt->initPrograms();
+  if(!progsValid)
+    return false;
   /*
 		Initialise the renderer.
 	 */
@@ -265,20 +255,13 @@ void Sample::think(double time)
                            nvmath::vec2f(m_windowState.m_mouseCurrent[0], m_windowState.m_mouseCurrent[1]),
                            m_windowState.m_mouseButtonFlags, m_windowState.m_mouseWheel);
 
-
-  int width  = m_windowState.m_swapSize[0];
-  int height = m_windowState.m_swapSize[1];
-
   VulkanAppContext* ctxt = VulkanAppContext::GetInstance();
   ctxt->setCameraMatrix(m_control.m_viewMatrix);
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-  {
-    ctxt->render();
-  }
+  ctxt->render();
 }
 
 

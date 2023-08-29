@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,7 @@ VulkanAppContext* VulkanAppContext::GetInstance()
   return instance;
 }
 
-VulkanAppContext::VulkanAppContext()
-    : m_width(1024)
-    , m_height(768)
-    , m_ready(false)
-    , m_rotor_node(NULL)
-{
-}
+VulkanAppContext::VulkanAppContext() {}
 
 void VulkanAppContext::loadVKSScene(std::string& inFileName)
 {
@@ -81,7 +75,7 @@ void VulkanAppContext::loadVKSScene(std::string& inFileName)
 
 #if USE_SINGLE_VBO
 
-  uint32_t vtxStoreSize = vkFile.vertexCount * 8 * sizeof(float);
+  uint32_t vtxStoreSize = size_t(vkFile.vertexCount) * 8 * sizeof(float);
   uint32_t idxStoreSize = vkFile.indexCount * sizeof(uint32_t);
 
   m_global_vbo.initBackingStore(vtxStoreSize);
@@ -108,7 +102,7 @@ void VulkanAppContext::loadVKSScene(std::string& inFileName)
     VKSAnimationRecord animation = vkFile.animations[0];
     uint32_t           nCnt      = animation.nodecount;
 
-    for(uint32_t n = 0; n < nCnt; ++n)
+    for(size_t n = 0; n < nCnt; ++n)
     {
       VKSAnimationNodeRecord nodeAnim = vkFile.animationNodes[n + animation.firstNode];
 
@@ -118,7 +112,7 @@ void VulkanAppContext::loadVKSScene(std::string& inFileName)
 
       uint32_t keyCount = nodeAnim.positionCount;
 
-      for(uint32_t k = 0; k < keyCount; ++k)
+      for(size_t k = 0; k < keyCount; ++k)
       {
         VKSAnimationKeyRecord key = vkFile.animationKeys[k + nodeAnim.firstPosition];
         vAnimNode->Position().newKey(key.time, key.key);
@@ -126,7 +120,7 @@ void VulkanAppContext::loadVKSScene(std::string& inFileName)
 
       keyCount = nodeAnim.rotationCount;
 
-      for(uint32_t k = 0; k < keyCount; ++k)
+      for(size_t k = 0; k < keyCount; ++k)
       {
         VKSAnimationKeyRecord key = vkFile.animationKeys[k + nodeAnim.firstRotation];
         vAnimNode->Rotation().newKey(key.time, key.key);
@@ -134,7 +128,7 @@ void VulkanAppContext::loadVKSScene(std::string& inFileName)
 
       keyCount = nodeAnim.scaleCount;
 
-      for(uint32_t k = 0; k < keyCount; ++k)
+      for(size_t k = 0; k < keyCount; ++k)
       {
         VKSAnimationKeyRecord key = vkFile.animationKeys[k + nodeAnim.firstScale];
         vAnimNode->Scale().newKey(key.time, key.key);
@@ -183,7 +177,7 @@ void VulkanAppContext::addVKSNode(VKSFile* inFile, uint32_t& inNodesProcessed, N
 
   uint32_t       nodeID   = inNodesProcessed;
   VKSNodeRecord* fileNode = &inFile->nodes[inNodesProcessed++];
-  Node*          node;
+  Node*          node     = nullptr;
 
   uint32_t mshCount = fileNode->meshCount;
 
@@ -268,10 +262,9 @@ void VulkanAppContext::initRenderer()
 
   resize(m_width, m_height);
 
-  VkCommandBuffer                          cmd    = VK_NULL_HANDLE;
-  VulkanDC::Device::Queue::CommandBufferID cmdID  = INIT_COMMAND_ID + 300;
-  VulkanDC*                                dc     = VulkanDC::Get();
-  VulkanDC::Device*                        device = dc->getDefaultDevice();
+  VkCommandBuffer                          cmd   = VK_NULL_HANDLE;
+  VulkanDC::Device::Queue::CommandBufferID cmdID = INIT_COMMAND_ID + 300;
+  VulkanDC*                                dc    = VulkanDC::Get();
 
   dc->getDefaultQueue()->beginCommandBuffer(cmdID, &cmd, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   dc->getDefaultQueue()->flushCommandBuffer(cmdID, NULL);
@@ -294,20 +287,49 @@ void VulkanAppContext::render()
   if(!m_ready)
     return;
 
-  VulkanDC*         dc     = VulkanDC::Get();
-  VulkanDC::Device* device = dc->getDefaultDevice();
-
   double nanoseconds_since_start = double(
       std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_clock_at_start).count());
   double seconds_since_start = nanoseconds_since_start / 1e9f;
-  m_rot_y                    = 0.75 * seconds_since_start;
+  m_rot_y                    = float(0.75 * seconds_since_start);
 
   if(m_rotor_node)
   {
-    m_rotor_node->getNode()->setRotation(0.0, 0.0, -m_rot_y * 32.0);
+    m_rotor_node->getNode()->setRotation(0.0, 0.0, -m_rot_y * 32.f);
   }
 
   m_renderer->update();
+}
+
+// This is a simple message callback to capture debug messages.
+// For a more complex callback with message filtering, see
+// Context::debugMessengerCallback in nvpro_core/context_vk.cpp.
+VKAPI_ATTR VkBool32 VKAPI_CALL debugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+                                                      VkDebugUtilsMessageTypeFlagsEXT             messageType,
+                                                      const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+                                                      void*                                       userData)
+{
+  if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+  {
+    nvprintfLevel(LOGLEVEL_DEBUG, "VERBOSE: %s \n --> %s\n", callbackData->pMessageIdName, callbackData->pMessage);
+  }
+  else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+  {
+    nvprintfLevel(LOGLEVEL_INFO, "INFO: %s \n --> %s\n", callbackData->pMessageIdName, callbackData->pMessage);
+  }
+  else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+  {
+    nvprintfLevel(LOGLEVEL_WARNING, "WARNING: %s \n --> %s\n", callbackData->pMessageIdName, callbackData->pMessage);
+  }
+  else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+  {
+    nvprintfLevel(LOGLEVEL_ERROR, "ERROR: %s \n --> %s\n", callbackData->pMessageIdName, callbackData->pMessage);
+  }
+  else
+  {
+    nvprintfLevel(LOGLEVEL_INFO, "%s \n --> %s\n", callbackData->pMessageIdName, callbackData->pMessage);
+  }
+  // Don't bail out, but keep going.
+  return VK_FALSE;
 }
 
 void VulkanAppContext::initAppContext()
@@ -325,18 +347,50 @@ void VulkanAppContext::initAppContext()
   /*
 		Set up the instance create info.
 	*/
-  VkInstanceCreateInfo createInfo    = {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
-  createInfo.pApplicationInfo        = &appInfo;
-  createInfo.enabledLayerCount       = 0;
-  createInfo.ppEnabledLayerNames     = NULL;
-  createInfo.enabledExtensionCount   = 0;
-  createInfo.ppEnabledExtensionNames = NULL;
+  VkInstanceCreateInfo createInfo = {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
+  createInfo.pApplicationInfo     = &appInfo;
+  std::vector<const char*> enabledLayers, enabledExtensions;
+  /* Validation: You can enable this and the #if below to enable the validation
+  layers. Note that this sample currently crashes when validation is on, but
+  this can be useful for development. */
+#if 0 && !defined(NDEBUG)
+  enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
+  enabledExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+  createInfo.enabledLayerCount       = uint32_t(enabledLayers.size());
+  createInfo.ppEnabledLayerNames     = enabledLayers.data();
+  createInfo.enabledExtensionCount   = uint32_t(enabledExtensions.size());
+  createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
   /*
 		Create the Vulkan Instance
 	*/
 
   VKA_CHECK_ERROR(vulkanCreateInstance(&createInfo, &m_vk_instance), "Could not create Vulkan Instance");
+
+  /* Validation: You can enable this and the #if above to enable the validation
+  layers. Note that this sample currently crashes when validation is on, but 
+  this can be useful for development. */
+#if 0 && !defined(NDEBUG)
+  {
+    PFN_vkCreateDebugUtilsMessengerEXT createDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+        vkGetInstanceProcAddr(m_vk_instance, "vkCreateDebugUtilsMessengerEXT"));
+    if(nullptr != createDebugUtilsMessengerEXT)
+    {
+      VkDebugUtilsMessengerCreateInfoEXT dbgCreateInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
+      dbgCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT       // For debug printf
+                                      | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT  // GPU info, bug
+                                      | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;   // Invalid usage
+      dbgCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT            // Other
+                                  | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT       // Violation of spec
+                                  | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;     // Non-optimal use
+      dbgCreateInfo.pfnUserCallback = debugMessengerCallback;
+      dbgCreateInfo.pUserData       = nullptr;
+      VKA_CHECK_ERROR(createDebugUtilsMessengerEXT(m_vk_instance, &dbgCreateInfo, nullptr, &m_debug_messenger),
+                      "Could not initialize debug utils messenger");
+    }
+  }
+#endif
 
   /*
 		Set up and initialise the Vulkan Device Context.
@@ -371,13 +425,10 @@ bool VulkanAppContext::initPrograms()
   m_program_ids.scene_fs = m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "std_fragment.glsl");
 
   m_program_ids.scene_quad_vs = m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "vertexQuad.glsl");
-  m_program_ids.scene_quad_fs =
-      m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentQuad.glsl");
+  m_program_ids.scene_quad_fs = m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentQuad.glsl");
 
-  m_program_ids.scene_terrain_vs =
-      m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "vertexTerrain.glsl");
-  m_program_ids.scene_terrain_fs =
-      m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentTerrain.glsl");
+  m_program_ids.scene_terrain_vs = m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_VERTEX_BIT, "vertexTerrain.glsl");
+  m_program_ids.scene_terrain_fs = m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, "fragmentTerrain.glsl");
   m_program_ids.scene_terrain_tcs =
       m_shaderModuleManager.createShaderModule(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, "tcsTerrain.glsl");
   m_program_ids.scene_terrain_tes =

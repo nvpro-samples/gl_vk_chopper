@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,11 +104,11 @@ public:
 
     private:
       Name              m_name;
-      NodeID            m_node_id;
-      VkQueue           m_queue;
-      VulkanDC::Device* m_device;
+      NodeID            m_node_id = 0;
+      VkQueue           m_queue   = nullptr;
+      VulkanDC::Device* m_device  = nullptr;
 
-      VkCommandPool    m_command_pool;
+      VkCommandPool    m_command_pool = VK_NULL_HANDLE;
       CommandBufferMap m_cached_buffers;
     };
 
@@ -128,19 +128,19 @@ public:
     void waitIdle();
 
   private:
-    VkPhysicalDeviceProperties       m_device_properties;
-    VkQueueFamilyProperties*         m_queue_properties;
-    VkPhysicalDeviceMemoryProperties m_memory_properties;
+    VkPhysicalDeviceProperties           m_device_properties{};
+    std::vector<VkQueueFamilyProperties> m_queue_properties;
+    VkPhysicalDeviceMemoryProperties     m_memory_properties{};
 
-    uint32_t         m_queue_count;
+    uint32_t         m_queue_count = 0;
     Queue::Map       m_queues;
-    VkPhysicalDevice m_physical_device;
-    VkDevice         m_device;
+    VkPhysicalDevice m_physical_device = nullptr;
+    VkDevice         m_device          = nullptr;
     Name             m_name;
 
 
-    char*    m_extension_names[64];
-    uint32_t m_extension_count;
+    char*    m_extension_names[64]{};
+    uint32_t m_extension_count = 0;
 
     void initDevice();
   };
@@ -166,15 +166,15 @@ private:
   VulkanDC();
 
 
-  bool              m_has_instance;
-  VkInstance        m_vk_instance;
-  VkPhysicalDevice* m_physical_devices;
-  uint32_t          m_device_count;
+  bool                          m_has_instance = false;
+  VkInstance                    m_vk_instance  = nullptr;
+  std::vector<VkPhysicalDevice> m_physical_devices;
+  uint32_t                      m_device_count = 0;
 
   Device::List m_devices;
 
-  Device*        m_default_device;
-  Device::Queue* m_default_queue;
+  Device*        m_default_device = nullptr;
+  Device::Queue* m_default_queue  = nullptr;
 
   void initDevices();
 

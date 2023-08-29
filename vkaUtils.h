@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,6 @@
 
 
 void dumpGlobalLayerNames(VkLayerProperties* pros, uint32_t count);
-
-#ifdef USE_LIB_PNG
-bool loadTexture(const char* filename, uint8_t** rgba_data, uint32_t inRowpitch, int32_t* width, int32_t* height, bool doAlloc = false);
-#endif
-
-bool loadTextFile(const char* filename, char** buffer, size_t& outSize);
 
 struct Projection
 {

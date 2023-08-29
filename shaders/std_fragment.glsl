@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ layout(std140, set=0, binding = 1) uniform cameraBuffer{
 };
 
 
-layout(set = 1, binding = 0) uniform sampler2D tex[16];
+layout(set = 1, binding = 0) uniform sampler2D tex[6];
 
 layout(set = 0,binding = 0) uniform samplerCube env;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +62,9 @@ void commandPoolCreate(VkCommandPool* outPool, uint32_t inQueueFamilyIndex, VkCo
 
 void createBufferData(uint8_t* inputData, size_t inputSize, BufferData* outData, VkBufferUsageFlagBits usage, VkMemoryPropertyFlagBits flags);
 
-void bufferCreateInfo(VkBufferCreateInfo* outBuffer, size_t inputSize, VkBufferUsageFlagBits inUsage);
+void bufferCreateInfo(VkBufferCreateInfo* outBuffer, size_t inputSize, VkBufferUsageFlags inUsage);
 
-void bufferCreate(VkBuffer* outBuffer, size_t inputSize, VkBufferUsageFlagBits inUsage);
+void bufferCreate(VkBuffer* outBuffer, size_t inputSize, VkBufferUsageFlags inUsage);
 
 void bufferAlloc(VkBuffer* inBuffer, VkDeviceMemory* outMemory, VkMemoryPropertyFlags inFlags);
 
@@ -77,7 +77,7 @@ void imageCreateInfo(VkImageCreateInfo*    outInfo,
                      uint32_t              inHeight,
                      uint32_t              inDepth     = 1,
                      uint32_t              inArraySize = 1,
-                     VkImageUsageFlagBits  inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
+                     VkImageUsageFlags     inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
                      VkImageTiling         inTiling    = VK_IMAGE_TILING_LINEAR,
                      VkSampleCountFlagBits inSamples   = VK_SAMPLE_COUNT_1_BIT,
                      uint32_t              inMipLevels = 1);
@@ -91,7 +91,7 @@ void imageCreate(VkImage*              outImage,
                  uint32_t              inDepth     = 1,
                  uint32_t              inArraySize = 1,
                  VkFlags               inMemFlags  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                 VkImageUsageFlagBits  inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
+                 VkImageUsageFlags     inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
                  VkImageTiling         inTiling    = VK_IMAGE_TILING_LINEAR,
                  VkSampleCountFlagBits inSamples   = VK_SAMPLE_COUNT_1_BIT,
                  uint32_t              inMipLevels = 1);
@@ -105,7 +105,7 @@ void imageCreateAndBind(VkImage*              outImage,
                         uint32_t              inDepth     = 1,
                         uint32_t              inArrayize  = 1,
                         VkFlags               inMemFlags  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                        VkImageUsageFlagBits  inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
+                        VkImageUsageFlags     inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
                         VkImageTiling         inTiling    = VK_IMAGE_TILING_LINEAR,
                         VkSampleCountFlagBits inSamples   = VK_SAMPLE_COUNT_1_BIT,
                         uint32_t              inMipLevels = 1);
@@ -221,12 +221,8 @@ void imageBarrierCreate(VkCommandBuffer*         inCmd,
                         VkImageLayout            inNewLayout,
                         VkImage                  inImage,
                         VkImageSubresourceRange& inSubRange,
-                        VkAccessFlags            inOutputMask    = VK_ACCESS_TRANSFER_WRITE_BIT,
-                        VkAccessFlags            inInputMask     = VK_ACCESS_TRANSFER_READ_BIT,
                         VkAccessFlagBits         inSrcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-                        VkAccessFlagBits         inDstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                        VkPipelineStageFlags     inSrcStages     = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                        VkPipelineStageFlags     inDestStages    = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+                        VkAccessFlagBits         inDstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
 void imageSubresourceRange(VkImageSubresourceRange* outRange,
                            VkImageAspectFlags       inAspect,
@@ -286,8 +282,9 @@ void graphicsPipelineCreate(VkPipeline*                             outPipeline,
                             VkPipelineViewportStateCreateInfo*      inViewport,
                             VkPipelineDepthStencilStateCreateInfo*  inDepthStencil,
                             VkRenderPass*                           inRenderPass,
-                            uint32_t                                inSubPass = 0,
-                            VkPipelineCreateFlags                   inFlags   = 0);
+                            uint32_t                                inSubPass    = 0,
+                            VkPipelineCreateFlags                   inFlags      = 0,
+                            VkPipeline                              basePipeline = VK_NULL_HANDLE);
 
 
 void createShader(const char* fileName, VkShaderStageFlagBits inStage, VkShaderModule* outModule);

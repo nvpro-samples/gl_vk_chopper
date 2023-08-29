@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,18 +106,18 @@ public:
   ID getID() { return m_id; }
 
 protected:
-  ID        m_id;
-  Node*     m_parent;
+  ID        m_id     = 0;
+  Node*     m_parent = nullptr;
   Transform m_transform;
 
   NodeList         m_child_nodes;
   Renderable::List m_renderables;
 
-  nvmath::vec3f m_position;
-  nvmath::vec3f m_rotation;
-  nvmath::vec3f m_scale;
+  nvmath::vec3f m_position{0.0f, 0.0f, 0.0f};
+  nvmath::vec3f m_rotation{0.0f, 0.0f, 0.0f};
+  nvmath::vec3f m_scale{1.0f, 1.0f, 1.0f};
 
-  bool m_transform_needs_update;
+  bool m_transform_needs_update = true;
 };
 
 

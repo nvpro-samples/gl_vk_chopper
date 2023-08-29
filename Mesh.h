@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,21 +78,21 @@ public:
 private:
   ID m_id;
 
-  Vec4f* m_vertices;
-  Vec4f* m_normals;
-  Vec2f* m_uvs;
+  Vec4f* m_vertices = nullptr;
+  Vec4f* m_normals  = nullptr;
+  Vec2f* m_uvs      = nullptr;
 
-  uint32_t* m_indices;
+  uint32_t* m_indices = nullptr;
 
-  uint32_t m_max_vertices;
-  uint32_t m_max_indices;
+  uint32_t m_max_vertices = 0;
+  uint32_t m_max_indices  = 0;
 
-  uint32_t m_vertex_count;
-  uint32_t m_index_count;
+  uint32_t m_vertex_count = 0;
+  uint32_t m_index_count  = 0;
 
-  uint32_t m_triangle_count;
+  uint32_t m_triangle_count = 0;
 
-  int32_t m_material_id;
+  int32_t m_material_id = 0;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,7 @@
 #include "VkeRenderer.h"
 
 
-VkeRenderer::VkeRenderer()
-{
-  m_samples = VK_SAMPLE_COUNT_8_BIT;
-  m_width   = 1024;
-  m_height  = 768;
-}
-
+VkeRenderer::VkeRenderer() {}
 
 VkeRenderer::~VkeRenderer() {}
 

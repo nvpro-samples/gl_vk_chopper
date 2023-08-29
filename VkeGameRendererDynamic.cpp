@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,26 @@ PFNGLDRAWVKIMAGENVPROC       glDrawVkImageNV;
 //GLAPI void GLAPIENTRY glDrawVkImageNV(GLuint64 vkImage, GLuint sampler, GLfloat x0, GLfloat y0, GLfloat x1, GLfloat y1, GLfloat z, GLfloat s0, GLfloat t0, GLfloat s1, GLfloat t1);
 #endif /* GL_GLEXT_PROTOTYPES */
 
+static void setDefaultViewportAndScissor(VkCommandBuffer cmd, uint32_t width, uint32_t height)
+{
+  VkViewport vp{};
+  VkRect2D   sc{};
+  vp.x        = 0;
+  vp.y        = 0;
+  vp.height   = (float)(height);
+  vp.width    = (float)(width);
+  vp.minDepth = 0.0f;
+  vp.maxDepth = 1.0f;
+
+  sc.offset.x      = 0;
+  sc.offset.y      = 0;
+  sc.extent.width  = width;
+  sc.extent.height = height;
+
+  vkCmdSetViewport(cmd, 0, 1, &vp);
+  vkCmdSetScissor(cmd, 0, 1, &sc);
+}
+
 VkeDrawCall::VkeDrawCall(vkeGameRendererDynamic* inRenderer)
     : m_renderer(inRenderer)
     , m_buffer_ready(false)
@@ -93,8 +113,7 @@ void VkeDrawCall::initCommandPool()
   cmdPoolInfo.queueFamilyIndex        = 0;
   cmdPoolInfo.flags                   = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-  VKA_CHECK_ERROR(vkCreateCommandPool(device->getVKDevice(), &cmdPoolInfo, NULL, &m_command_pool),
-                  "Could not create command pool.\n");
+  VKA_CHECK_ERROR(vkCreateCommandPool(device->getVKDevice(), &cmdPoolInfo, NULL, &m_command_pool), "Could not create command pool.\n");
 
   VkCommandBufferAllocateInfo cmdBufInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
   cmdBufInfo.commandBufferCount          = 2;
@@ -147,7 +166,11 @@ void VkeDrawCall::initDescriptor()
 }
 
 
-void VkeDrawCall::initDrawCommands(const uint32_t inCount, const uint32_t inCommandIndex)
+void VkeDrawCall::initDrawCommands(const uint32_t inCount,
+                                   const uint32_t inCommandIndex,
+                                   VkRenderPass   parentRenderPass,
+                                   uint32_t       viewportWidth,
+                                   uint32_t       viewportHeight)
 {
 
   VkPipelineLayout layout              = m_renderer->getPipelineLayout();
@@ -157,22 +180,22 @@ void VkeDrawCall::initDrawCommands(const uint32_t inCount, const uint32_t inComm
   VkBuffer         sceneIndirectBuffer = m_renderer->getSceneIndirectBuffer();
 
 
-  VulkanDC*                dc     = VulkanDC::Get();
-  VulkanDC::Device*        device = dc->getDefaultDevice();
-  VulkanDC::Device::Queue* queue  = dc->getDefaultQueue();
-  VulkanAppContext*        ctxt   = VulkanAppContext::GetInstance();
+  VulkanAppContext* ctxt = VulkanAppContext::GetInstance();
 
 
   vkResetCommandBuffer(m_draw_command[inCommandIndex], 0);
 
+  VkCommandBufferInheritanceInfo cmdInheritanceInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO};
+  cmdInheritanceInfo.renderPass                     = parentRenderPass;
+  cmdInheritanceInfo.subpass                        = 0;
+  VkCommandBufferBeginInfo cmdBeginInfo             = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+  cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+  cmdBeginInfo.pInheritanceInfo = &cmdInheritanceInfo;
 
-  VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-  cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+  VKA_CHECK_ERROR(vkBeginCommandBuffer(m_draw_command[inCommandIndex], &cmdBeginInfo), "Could not begin command buffer.\n");
 
-  VKA_CHECK_ERROR(vkBeginCommandBuffer(m_draw_command[inCommandIndex], &cmdBeginInfo),
-                  "Could not begin command buffer.\n");
-
-
+  // TODO: Switch to using inherited viewport and scissor
+  setDefaultViewportAndScissor(m_draw_command[inCommandIndex], viewportWidth, viewportHeight);
   vkCmdBindPipeline(m_draw_command[inCommandIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   VkeVBO* theVBO = ctxt->getVBO();
@@ -183,7 +206,6 @@ void VkeDrawCall::initDrawCommands(const uint32_t inCount, const uint32_t inComm
 
   VkDescriptorSet sets[3] = {sceneDescriptor, textureDescriptors[0], m_transform_descriptor_set};
   vkCmdBindDescriptorSets(m_draw_command[inCommandIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, sets, 0, NULL);
-
 
   vkCmdDrawIndexedIndirect(m_draw_command[inCommandIndex], sceneIndirectBuffer, 0, inCount, sizeof(VkDrawIndexedIndirectCommand));
   vkCmdDraw(m_draw_command[inCommandIndex], 1, 1, 0, 0);
@@ -265,8 +287,7 @@ void vkeGameRendererDynamic::initIndirectCommands()
   cmdBufInfo.commandPool                 = queue->getCommandPool();
   cmdBufInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-  VKA_CHECK_ERROR(vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, &copyCmd),
-                  "Could not allocate command buffers.\n");
+  VKA_CHECK_ERROR(vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, &copyCmd), "Could not allocate command buffers.\n");
 
   VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
   cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -285,10 +306,8 @@ void vkeGameRendererDynamic::initIndirectCommands()
   VkFenceCreateInfo fenceInfo = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
 
   VKA_CHECK_ERROR(vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &theFence), "Could not create fence.\n");
-  VKA_CHECK_ERROR(vkQueueSubmit(queue->getVKQueue(), 1, &subInfo, theFence),
-                  "Could not submit queue for indirect buffer copy.\n");
-  VKA_CHECK_ERROR(vkWaitForFences(device->getVKDevice(), 1, &theFence, VK_TRUE, UINT_MAX),
-                  "Could not wait for fence.\n");
+  VKA_CHECK_ERROR(vkQueueSubmit(queue->getVKQueue(), 1, &subInfo, theFence), "Could not submit queue for indirect buffer copy.\n");
+  VKA_CHECK_ERROR(vkWaitForFences(device->getVKDevice(), 1, &theFence, VK_TRUE, UINT_MAX), "Could not wait for fence.\n");
 
   vkFreeCommandBuffers(device->getVKDevice(), queue->getCommandPool(), 1, &copyCmd);
   vkDestroyFence(device->getVKDevice(), theFence, NULL);
@@ -319,7 +338,7 @@ void vkeGameRendererDynamic::initDescriptorPool()
 
 float quickRandomUVD()
 {
-  return ((float)rand() / (float)RAND_MAX) * 2.0 - 1.0;
+  return ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
 }
 
 
@@ -347,11 +366,9 @@ void vkeGameRendererDynamic::initRenderer()
   VKA_CHECK_ERROR(vkCreateSemaphore(device->getVKDevice(), &semInfo, NULL, &m_render_done[1]),
                   "Could not create render done semaphore.\n");
 
-  VKA_CHECK_ERROR(vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &m_update_fence[0]),
-                  "Could not create update fence.\n");
+  VKA_CHECK_ERROR(vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &m_update_fence[0]), "Could not create update fence.\n");
   fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-  VKA_CHECK_ERROR(vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &m_update_fence[1]),
-                  "Could not create update fence.\n");
+  VKA_CHECK_ERROR(vkCreateFence(device->getVKDevice(), &fenceInfo, NULL, &m_update_fence[1]), "Could not create update fence.\n");
 
   m_terrain_command[0] = VK_NULL_HANDLE;
   m_terrain_command[1] = VK_NULL_HANDLE;
@@ -363,17 +380,17 @@ void vkeGameRendererDynamic::initRenderer()
   m_is_first_frame = true;
 
 
-  nvmath::vec3f table[128][128];
+  nvmath::vec4f table[128][128];
 
   for(int v = 0; v < 128; ++v)
   {
     for(int u = 0; u < 128; ++u)
     {
-
       nvmath::vec2f vctr(quickRandomUVD(), quickRandomUVD());
       vctr = nvmath::normalize(vctr);
-
-      table[u][v] = nvmath::vec3f(vctr.x, vctr.y, vctr.x);
+      // VK_FORMAT_R32G32B32_SFLOAT isn't so widely supported, so we use
+      // VK_FORMAT_R32G32B32A32_SFLOAT instead.
+      table[u][v] = nvmath::vec4f(vctr.x, vctr.y, vctr.x, 0.f);
     }
   }
 
@@ -381,18 +398,17 @@ void vkeGameRendererDynamic::initRenderer()
   m_screen_quad.initQuadData();
   m_terrain_quad.initQuadData();
 
-  m_textures.newTexture(0)->setFormat(VK_FORMAT_R32G32B32_SFLOAT);
-  m_textures.getTexture(0)->loadTextureFloatData((float*)&(table[0][0].x), 128, 128, 3);
+  m_textures.newTexture(0)->setFormat(VK_FORMAT_R32G32B32A32_SFLOAT);
+  m_textures.getTexture(0)->loadTextureFloatData((float*)&(table[0][0].x), 128, 128, 4);
 
-
-  m_flight_paths = (FlightPath**)malloc(sizeof(FlightPath*) * m_instance_count);
+  m_flight_paths.resize(m_instance_count);
 
   for(uint32_t i = 0; i < m_instance_count; ++i)
   {
-
-    nvmath::vec2f initPos(quickRandomUVD() * 100.0, -200 + (quickRandomUVD() * 20));
-    nvmath::vec2f endPos(quickRandomUVD() * 100.0, 200 + (quickRandomUVD() * 20));
-    m_flight_paths[i] = new FlightPath(initPos, endPos, quickRandomUVD() * 0.5 + 0.5, quickRandomUVD() * 4 + 10);
+    nvmath::vec2f initPos(quickRandomUVD() * 100.0f, -200.f + (quickRandomUVD() * 20.f));
+    nvmath::vec2f endPos(quickRandomUVD() * 100.0f, 200.f + (quickRandomUVD() * 20.f));
+    m_flight_paths[i] =
+        std::make_unique<FlightPath>(initPos, endPos, quickRandomUVD() * 0.5f + 0.5f, quickRandomUVD() * 4.f + 10.f);
   }
 
   /*
@@ -445,7 +461,7 @@ void vkeGameRendererDynamic::setNodeData(VkeNodeData::List* inData)
 
     m_uniforms_local = (float*)malloc(sz);
 
-    bufferCreate(&m_uniforms_buffer, sz, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    bufferCreate(&m_uniforms_buffer, sz, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     bufferAlloc(&m_uniforms_buffer, &m_uniforms_memory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 
@@ -476,8 +492,7 @@ void vkeGameRendererDynamic::setMaterialData(VkeMaterial::List* inData)
 
     VkeMaterialUniform* uniforms = NULL;
 
-    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), m_material_staging, 0, sz, 0, (void**)&uniforms),
-                    "Could not map buffer memory.\n");
+    VKA_CHECK_ERROR(vkMapMemory(getDefaultDevice(), m_material_staging, 0, sz, 0, (void**)&uniforms), "Could not map buffer memory.\n");
 
     for(size_t i = 0; i < cnt; ++i)
     {
@@ -500,23 +515,14 @@ size_t vkeGameRendererDynamic::getRequiredDescriptorCount()
 
 void vkeGameRendererDynamic::update()
 {
-  VulkanAppContext*                        ctxt   = VulkanAppContext::GetInstance();
-  VulkanDC*                                dc     = VulkanDC::Get();
-  VulkanDC::Device*                        device = dc->getDefaultDevice();
-  VkCommandBuffer                          cmd    = VK_NULL_HANDLE;
-  VulkanDC::Device::Queue::CommandBufferID cmdID  = INIT_COMMAND_ID + 300;
+  VulkanDC*         dc     = VulkanDC::Get();
+  VulkanDC::Device* device = dc->getDefaultDevice();
 
   static float sTime = 0.0f;
 
-  static uint32_t* uniforms = NULL;
-
-  size_t      cnt = m_node_data->count();
-  size_t      sz  = (sizeof(VkeNodeUniform) * cnt) + (m_instance_count * 64);
-  static bool ismapped(false);
+  size_t cnt = m_node_data->count();
 
   nvmath::mat4f tempMatrix;
-  const float   r2d = 180 / (3.14159265359);
-  static float  xTheta(0.0f);
 
 
   for(size_t i = 0; i < m_instance_count; ++i)
@@ -568,24 +574,20 @@ void vkeGameRendererDynamic::update()
   m_current_buffer_index++;
   m_current_buffer_index %= 2;
 
-  sTime += 0.16;
+  sTime += 0.16f;
 }
 
 
 void vkeGameRendererDynamic::present()
 {
-  VulkanDC*                dc     = VulkanDC::Get();
-  VulkanDC::Device*        device = dc->getDefaultDevice();
-  VulkanDC::Device::Queue* queue  = dc->getDefaultQueue();
-
-
   glDisable(GL_DEPTH_TEST);
 
 #if defined(WIN32)
   glWaitVkSemaphoreNV((GLuint64)m_render_done[m_current_buffer_index]);
 #endif
 
-  glDrawVkImageNV((GLuint64)m_resolve_attachment[m_current_buffer_index].image, 0, 0, 0, m_width, m_height, 0, 0, 1, 1, 0);
+  glDrawVkImageNV((GLuint64)m_resolve_attachment[m_current_buffer_index].image, 0, 0, 0, float(m_width),
+                  float(m_height), 0, 0, 1, 1, 0);
 
   glEnable(GL_DEPTH_TEST);
 #if defined(WIN32)
@@ -616,7 +618,7 @@ void vkeGameRendererDynamic::initDescriptorLayout()
 	Binding 3:		Material
 	*/
 
-  layoutBinding(&sceneLayoutBindings[0], 0, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+  layoutBinding(&sceneLayoutBindings[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
   layoutBinding(&sceneLayoutBindings[1], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
   layoutBinding(&sceneLayoutBindings[2], 2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
@@ -634,8 +636,8 @@ void vkeGameRendererDynamic::initDescriptorLayout()
 	Texture Layout Bindings (Set 1)
 	Binding 0:		Diffuse Texture.
 	*/
-  layoutBinding(&textureLayoutBindings[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                uint32_t(m_materials->count()));
+  assert(m_materials->count() == 6);  // We include 6 slots for textures in the shader
+  layoutBinding(&textureLayoutBindings[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 6);
 
 
   descriptorSetLayoutCreate(&m_transform_descriptor_layout, 1, &transformLayoutBinding);
@@ -656,7 +658,8 @@ void vkeGameRendererDynamic::initDescriptorLayout()
 
 
   layoutBinding(&quadBinding[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
-  layoutBinding(&quadBinding[1], 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+  layoutBinding(&quadBinding[1], 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
   layoutBinding(&quadBinding[2], 2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
 
 
@@ -676,9 +679,9 @@ void vkeGameRendererDynamic::initDescriptorLayout()
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
                     | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 1);
-  layoutBinding(&terrainBinding[2], 2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+  layoutBinding(&terrainBinding[2], 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-  layoutBinding(&terrainBinding[3], 3, VK_DESCRIPTOR_TYPE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+  layoutBinding(&terrainBinding[3], 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
 
   //descriptor layout describing the bindings.
   descriptorSetLayoutCreate(&m_terrain_descriptor_set_layout, 4, terrainBinding);
@@ -689,19 +692,16 @@ void vkeGameRendererDynamic::initDescriptorLayout()
 
 void vkeGameRendererDynamic::initDescriptorSets()
 {
-
-  VulkanDC*         dc     = VulkanDC::Get();
-  VulkanDC::Device* device = dc->getDefaultDevice();
-  uint32_t          count  = 1;
+  VulkanDC* dc = VulkanDC::Get();
   if(!dc)
     return;
-
+  VulkanDC::Device* device = dc->getDefaultDevice();
 
   initCamera();
 
   vkResetDescriptorPool(device->getVKDevice(), getDescriptorPool(), 0);
 
-  VkWriteDescriptorSet writes[5];
+  VkWriteDescriptorSet writes[6]{};
 
   /*----------------------------------------------------------
 	Get the resource data for the bindings.
@@ -714,10 +714,9 @@ void vkeGameRendererDynamic::initDescriptorSets()
   VkeTexture::Data terrain = m_textures.getTexture(0)->getData();
 
   /*
-	Camera and Light uniforms
+	Camera uniform
 	*/
-  VkDescriptorBufferInfo camInfo   = m_camera->getDescriptor();
-  VkDescriptorBufferInfo lightInfo = m_light->getDescriptor();
+  VkDescriptorBufferInfo camInfo = m_camera->getDescriptor();
 
   /*
 	Cube map texture.
@@ -744,10 +743,11 @@ void vkeGameRendererDynamic::initDescriptorSets()
 
   for(size_t i = 0; i < texCount; ++i)
   {
-    VkeMaterial*     mtrl     = m_materials->getMaterial(i);
-    VkeTexture::Data texData  = mtrl->getTextures().getTexture(0)->getData();
-    texImageInfo[i].imageView = texData.view;
-    texImageInfo[i].sampler   = texData.sampler;
+    VkeMaterial*     mtrl       = m_materials->getMaterial(i);
+    VkeTexture::Data texData    = mtrl->getTextures().getTexture(0)->getData();
+    texImageInfo[i].imageView   = texData.view;
+    texImageInfo[i].sampler     = texData.sampler;
+    texImageInfo[i].imageLayout = texData.imageLayout;
   }
 
   /*
@@ -759,17 +759,6 @@ void vkeGameRendererDynamic::initDescriptorSets()
   cubeTexture.sampler     = cube.sampler;
   cubeTexture.imageView   = cube.view;
   cubeTexture.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-  /*
-	Capture the layouts for the scene descriptor
-	sets and the texture descriptor sets.
-	*/
-  VkDescriptorSetLayout* textureLayouts = (VkDescriptorSetLayout*)malloc(sizeof(VkDescriptorSetLayout) * texCount);
-
-  for(uint32_t i = 0; i < texCount; ++i)
-  {
-    textureLayouts[i] = m_texture_descriptor_set_layout;
-  }
 
   /*
 	Allocate storage for the scene and
@@ -862,7 +851,7 @@ void vkeGameRendererDynamic::initDescriptorSets()
 	Binding 0:		Transform
 	*/
 
-  descriptorSetWrite(&writes[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &m_transforms_descriptor, VK_NULL_HANDLE, 0,
+  descriptorSetWrite(&writes[4], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &m_transforms_descriptor, VK_NULL_HANDLE, 0,
                      m_transform_descriptor_set);  //transform
   vkUpdateDescriptorSets(device->getVKDevice(), 1, writes, 0, NULL);
 
@@ -871,10 +860,10 @@ void vkeGameRendererDynamic::initDescriptorSets()
 	Scene layout bindings (set 1)
 	Binding 0:		Scene texture array
 	*/
-  descriptorSetWrite(&writes[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uint32_t(texCount), VK_NULL_HANDLE,
+  descriptorSetWrite(&writes[5], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uint32_t(texCount), VK_NULL_HANDLE,
                      texImageInfo, 0, m_texture_descriptor_sets[0]);  //cubemap
 
-  vkUpdateDescriptorSets(device->getVKDevice(), (uint32_t)1, writes, 0, NULL);
+  vkUpdateDescriptorSets(device->getVKDevice(), 6, writes, 0, NULL);
   //Free the texture image info allocated earlier.
   free(texImageInfo);
 
@@ -904,8 +893,9 @@ void vkeGameRendererDynamic::initDescriptorSets()
   descriptorSetWrite(&writes[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &m_terrain_quad.getData().descriptor,
                      VK_NULL_HANDLE, 0, m_terrain_descriptor_set);
   descriptorSetWrite(&writes[1], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &camInfo, VK_NULL_HANDLE, 0, m_terrain_descriptor_set);
-  descriptorSetWrite(&writes[2], 2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_NULL_HANDLE, &fpSampler, 0, m_terrain_descriptor_set);
-  descriptorSetWrite(&writes[3], 3, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_NULL_HANDLE, &cubeTexture, 0, m_terrain_descriptor_set);
+  descriptorSetWrite(&writes[2], 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_NULL_HANDLE, &fpSampler, 0, m_terrain_descriptor_set);
+  descriptorSetWrite(&writes[3], 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_NULL_HANDLE, &cubeTexture, 0,
+                     m_terrain_descriptor_set);
 
   vkUpdateDescriptorSets(device->getVKDevice(), 4, writes, 0, NULL);
 
@@ -982,10 +972,10 @@ void vkeGameRendererDynamic::initPipeline()
   /*
 	Create the color blend state.
 	*/
-  VkPipelineColorBlendAttachmentState attState[3];
+  VkPipelineColorBlendAttachmentState attState[1];
   uint32_t                            sampleMask = 0xFF;
-  blendAttachmentStateN(3, attState);
-  blendStateInfo(&blendState, 3, attState);
+  blendAttachmentStateN(1, attState);
+  blendStateInfo(&blendState, 1, attState);
 
   /*
 	Create the viewport state
@@ -1044,7 +1034,7 @@ void vkeGameRendererDynamic::initPipeline()
 	*/
   graphicsPipelineCreate(&m_quad_pipeline, &m_pipeline_cache, m_quad_pipeline_layout, 2, shaderStages, &vertexState,
                          &inputState, &rasterState, &blendState, &multisampleState, &viewportState, &depthState,
-                         &m_render_pass, 0, VK_PIPELINE_CREATE_DERIVATIVE_BIT);
+                         &m_render_pass, 0, VK_PIPELINE_CREATE_DERIVATIVE_BIT, m_pipeline);
 
   /*----------------------------------------------------------
 	Create the terrain pipeline.
@@ -1072,7 +1062,7 @@ void vkeGameRendererDynamic::initPipeline()
 	*/
   graphicsPipelineCreate(&m_terrain_pipeline, &m_pipeline_cache, m_terrain_pipeline_layout, 4, shaderStages,
                          &vertexState, &inputState, &rasterState, &blendState, &multisampleState, &viewportState,
-                         &depthState, &m_render_pass, 0, VK_PIPELINE_CREATE_DERIVATIVE_BIT);
+                         &depthState, &m_render_pass, 0, VK_PIPELINE_CREATE_DERIVATIVE_BIT, m_pipeline);
 }
 
 
@@ -1155,8 +1145,7 @@ void vkeGameRendererDynamic::initFramebuffer(uint32_t inWidth, uint32_t inHeight
   /*
 	Specify usage for the frame buffer attachments.
 	*/
-  VkImageUsageFlagBits gBufferFlags = (VkImageUsageFlagBits)(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-  VkImageUsageFlagBits sBufferFlags = (VkImageUsageFlagBits)(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+  VkImageUsageFlags gBufferUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
   /*
 	Create the depth attachment image and image view.
@@ -1165,14 +1154,15 @@ void vkeGameRendererDynamic::initFramebuffer(uint32_t inWidth, uint32_t inHeight
   imageCreateAndBind(&m_depth_attachment.image, &m_depth_attachment.memory, depthFmt, VK_IMAGE_TYPE_2D, m_width,
                      m_height, 1, 1, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                      VK_IMAGE_TILING_OPTIMAL, getSamples());
-  imageViewCreate(&m_depth_attachment.view, m_depth_attachment.image, VK_IMAGE_VIEW_TYPE_2D, depthFmt);
+  imageViewCreate(&m_depth_attachment.view, m_depth_attachment.image, VK_IMAGE_VIEW_TYPE_2D, depthFmt, VK_IMAGE_ASPECT_DEPTH_BIT);
 
   /*
 	Create the color attachment image and image view.
 	*/
   m_color_attachment.format = colorFmt;
-  imageCreateAndBind(&m_color_attachment.image, &m_color_attachment.memory, colorFmt, VK_IMAGE_TYPE_2D, m_width, m_height,
-                     1, 1, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, gBufferFlags, VK_IMAGE_TILING_OPTIMAL, getSamples());
+  imageCreateAndBind(&m_color_attachment.image, &m_color_attachment.memory, colorFmt, VK_IMAGE_TYPE_2D, m_width,
+                     m_height, 1, 1, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                     gBufferUsage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_IMAGE_TILING_OPTIMAL, getSamples());
   imageViewCreate(&m_color_attachment.view, m_color_attachment.image, VK_IMAGE_VIEW_TYPE_2D, colorFmt);
 
   /*
@@ -1182,15 +1172,43 @@ void vkeGameRendererDynamic::initFramebuffer(uint32_t inWidth, uint32_t inHeight
   {
     m_resolve_attachment[i].format = colorFmt;
     imageCreateAndBind(&m_resolve_attachment[i].image, &m_resolve_attachment[i].memory, colorFmt, VK_IMAGE_TYPE_2D,
-                       m_width, m_height, 1, 1, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, gBufferFlags,
-                       VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT);
+                       m_width, m_height, 1, 1, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                       gBufferUsage | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT);
     imageViewCreate(&m_resolve_attachment[i].view, m_resolve_attachment[i].image, VK_IMAGE_VIEW_TYPE_2D, colorFmt);
   }
 
-  /*
-	Put the image views into a temporary array
-	to pass to the framebuffer create info struct.
-	*/
+  /* Start a small command buffer to set the layouts of the images to their correct values. */
+  {
+    VkCommandBufferAllocateInfo cmdAllocateInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+    cmdAllocateInfo.commandBufferCount = 1;
+    cmdAllocateInfo.commandPool        = m_primary_buffer_cmd_pool;
+    cmdAllocateInfo.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    VkCommandBuffer cmd                = VK_NULL_HANDLE;
+    VKA_CHECK_ERROR(vkAllocateCommandBuffers(getDefaultDevice(), &cmdAllocateInfo, &cmd),
+                    "Could not allocate temporary command buffer to set attachment layouts");
+    VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VKA_CHECK_ERROR(vkBeginCommandBuffer(cmd, &cmdBeginInfo), "Could not begin command buffer.");
+    imageSetLayout(&cmd, m_depth_attachment.image, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+                   VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    imageSetLayout(&cmd, m_color_attachment.image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    imageSetLayout(&cmd, m_resolve_attachment[0].image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    imageSetLayout(&cmd, m_resolve_attachment[1].image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    VKA_CHECK_ERROR(vkEndCommandBuffer(cmd), "Could not end command buffer.");
+    VkSubmitInfo subInfo       = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    subInfo.commandBufferCount = 1;
+    subInfo.pCommandBuffers    = &cmd;
+    VkFence           fence;
+    VkFenceCreateInfo fenceInfo = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    VKA_CHECK_ERROR(vkCreateFence(getDefaultDevice(), &fenceInfo, NULL, &fence), "Could not create fence.\n");
+    vkQueueSubmit(queue->getVKQueue(), 1, &subInfo, fence);
+    vkWaitForFences(getDefaultDevice(), 1, &fence, VK_TRUE, ~0ULL);
+    vkDestroyFence(getDefaultDevice(), fence, nullptr);
+    vkFreeCommandBuffers(getDefaultDevice(), m_primary_buffer_cmd_pool, 1, &cmd);
+  }
 
   /*
 	Setup the framebuffer create info struct.
@@ -1209,8 +1227,7 @@ void vkeGameRendererDynamic::initFramebuffer(uint32_t inWidth, uint32_t inHeight
     /*
 		Create 2 framebuffers for ping pong.
 		*/
-    VKA_CHECK_ERROR(vkCreateFramebuffer(device->getVKDevice(), &fbInfo, NULL, &m_framebuffers[i]),
-                    "Could not create framebuffer.\n");
+    VKA_CHECK_ERROR(vkCreateFramebuffer(device->getVKDevice(), &fbInfo, NULL, &m_framebuffers[i]), "Could not create framebuffer.\n");
   }
 }
 
@@ -1220,9 +1237,6 @@ void vkeGameRendererDynamic::initTerrainCommand()
   VulkanDC*                dc     = VulkanDC::Get();
   VulkanDC::Device*        device = dc->getDefaultDevice();
   VulkanDC::Device::Queue* queue  = dc->getDefaultQueue();
-  uint32_t                 cmdID  = 1021;
-
-  VkResult rslt;
 
   for(uint32_t i = 0; i < 2; ++i)
   {
@@ -1240,14 +1254,20 @@ void vkeGameRendererDynamic::initTerrainCommand()
       cmdBufInfo.commandPool                 = queue->getCommandPool();
       cmdBufInfo.level                       = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 
-      rslt = vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, &m_terrain_command[i]);
+      VKA_CHECK_ERROR(vkAllocateCommandBuffers(device->getVKDevice(), &cmdBufInfo, &m_terrain_command[i]),
+                      "vkAllocateCommandBuffers failed");
 
-      VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-      cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+      VkCommandBufferInheritanceInfo cmdInheritanceInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO};
+      cmdInheritanceInfo.renderPass                     = m_render_pass;
+      cmdInheritanceInfo.subpass                        = 0;
+      VkCommandBufferBeginInfo cmdBeginInfo             = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+      cmdBeginInfo.flags                                = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+      cmdBeginInfo.pInheritanceInfo                     = &cmdInheritanceInfo;
 
-      rslt = vkBeginCommandBuffer(m_terrain_command[i], &cmdBeginInfo);
+      VKA_CHECK_ERROR(vkBeginCommandBuffer(m_terrain_command[i], &cmdBeginInfo), "vkBeginCommandBuffer failed");
 
-
+      // TODO: Switch to using VkCommandBufferInheritanceViewportScissorInfoNV here
+      setDefaultViewportAndScissor(m_terrain_command[i], m_width, m_height);
       vkCmdBindPipeline(m_terrain_command[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_quad_pipeline);
       vkCmdBindDescriptorSets(m_terrain_command[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_quad_pipeline_layout, 0, 1,
                               &m_quad_descriptor_set, 0, NULL);
@@ -1282,10 +1302,10 @@ void vkeGameRendererDynamic::initCamera()
 void vkeGameRendererDynamic::initDrawCalls()
 {
   m_max_draw_calls = 1;
-  m_draw_calls     = (VkeDrawCall**)malloc(sizeof(VkeDrawCall*) * m_max_draw_calls);
+  m_draw_calls.resize(m_max_draw_calls);
   for(uint32_t i = 0; i < m_max_draw_calls; ++i)
   {
-    m_draw_calls[i] = new VkeDrawCall(this);
+    m_draw_calls[i] = std::make_unique<VkeDrawCall>(this);
   }
 }
 
@@ -1294,9 +1314,7 @@ void vkeGameRendererDynamic::generateDrawCommands()
 
   //Start generating draw commands.
 
-  VulkanDC*         dc     = VulkanDC::Get();
-  VulkanDC::Device* device = dc->getDefaultDevice();
-  VkClearValue      clearValues[3];
+  VkClearValue clearValues[3];
 
   colorClearValues(&clearValues[0], 1.0, 1.0, 1.0);
   depthStencilClearValues(&clearValues[1]);  //default#
@@ -1309,47 +1327,28 @@ void vkeGameRendererDynamic::generateDrawCommands()
   m_calls_generated = 0;
   for(uint32_t i = 0; i < m_max_draw_calls; ++i)
   {
-    m_draw_calls[i]->initDrawCommands(uint32_t(m_node_data->count()), m_current_buffer_index);
+    m_draw_calls[i]->initDrawCommands(uint32_t(m_node_data->count()), m_current_buffer_index, m_render_pass, m_width, m_height);
   }
 
   /*
 	Begin setting up the primary command buffer.
 	*/
   VkCommandBufferBeginInfo cmdBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-  cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+  cmdBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-  VKA_CHECK_ERROR(vkResetCommandBuffer(m_primary_commands[m_current_buffer_index], 0),
-                  "Could not reset primary command buffer");
-  VKA_CHECK_ERROR(vkBeginCommandBuffer(m_primary_commands[m_current_buffer_index], &cmdBeginInfo),
-                  "Could not begin primary command buffer.\n");
-
+  VkCommandBuffer cmd = m_primary_commands[m_current_buffer_index];
+  VKA_CHECK_ERROR(vkResetCommandBuffer(cmd, 0), "Could not reset primary command buffer");
+  VKA_CHECK_ERROR(vkBeginCommandBuffer(cmd, &cmdBeginInfo), "Could not begin primary command buffer.\n");
 
   size_t       cnt = m_node_data->count();
   VkDeviceSize sz  = (sizeof(VkeNodeUniform) * cnt) + (m_instance_count * 64);
-  vkCmdUpdateBuffer(m_primary_commands[m_current_buffer_index], m_uniforms_buffer, 0, sz, (const uint32_t*)m_uniforms_local);
-  m_camera->updateCameraCmd(m_primary_commands[m_current_buffer_index]);
+  vkCmdUpdateBuffer(cmd, m_uniforms_buffer, 0, sz, (const uint32_t*)m_uniforms_local);
+  m_camera->updateCameraCmd(cmd);
 
 
-  renderPassBegin(&m_primary_commands[m_current_buffer_index], m_render_pass, m_framebuffers[m_current_buffer_index], 0,
-                  0, m_width, m_height, clearValues, 3, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+  renderPassBegin(&cmd, m_render_pass, m_framebuffers[m_current_buffer_index], 0, 0, m_width, m_height, clearValues, 3,
+                  VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-
-  VkViewport vp;
-  VkRect2D   sc;
-  vp.x        = 0;
-  vp.y        = 0;
-  vp.height   = (float)(m_height);
-  vp.width    = (float)(m_width);
-  vp.minDepth = 0.0f;
-  vp.maxDepth = 1.0f;
-
-  sc.offset.x      = 0;
-  sc.offset.y      = 0;
-  sc.extent.width  = vp.width;
-  sc.extent.height = vp.height;
-
-  vkCmdSetViewport(m_primary_commands[m_current_buffer_index], 0, 1, &vp);
-  vkCmdSetScissor(m_primary_commands[m_current_buffer_index], 0, 1, &sc);
 
   /*
 	Wait here until the secondary commands are ready.
@@ -1386,12 +1385,20 @@ void vkeGameRendererDynamic::generateDrawCommands()
   blitInfo.extent.height                 = m_height;
   blitInfo.extent.depth                  = 1;
 
-  vkCmdResolveImage(m_primary_commands[m_current_buffer_index], m_color_attachment.image, VK_IMAGE_LAYOUT_GENERAL,
-                    m_resolve_attachment[m_current_buffer_index].image, VK_IMAGE_LAYOUT_GENERAL, 1, &blitInfo);
+  imageSetLayout(&cmd, m_color_attachment.image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  imageSetLayout(&cmd, m_resolve_attachment[m_current_buffer_index].image, VK_IMAGE_ASPECT_COLOR_BIT,
+                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
+  vkCmdResolveImage(m_primary_commands[m_current_buffer_index], m_color_attachment.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    m_resolve_attachment[m_current_buffer_index].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitInfo);
 
-  VKA_CHECK_ERROR(vkEndCommandBuffer(m_primary_commands[m_current_buffer_index]),
-                  "Could not end command buffer for draw command.\n");
+  imageSetLayout(&cmd, m_color_attachment.image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  imageSetLayout(&cmd, m_resolve_attachment[m_current_buffer_index].image, VK_IMAGE_ASPECT_COLOR_BIT,
+                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+  VKA_CHECK_ERROR(vkEndCommandBuffer(m_primary_commands[m_current_buffer_index]), "Could not end command buffer for draw command.\n");
 }
 
 

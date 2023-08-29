@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,15 +35,15 @@
 #endif
 
 #ifndef VKE_DEFAULT_CAMERA_NEAR_PLANE
-#define VKE_DEFAULT_CAMERA_NEAR_PLANE 0.001
+#define VKE_DEFAULT_CAMERA_NEAR_PLANE 0.001f
 #endif
 
 #ifndef VKE_DEFAULT_CAMERA_FAR_PLANE
-#define VKE_DEFAULT_CAMERA_FAR_PLANE 600.0
+#define VKE_DEFAULT_CAMERA_FAR_PLANE 600.0f
 #endif
 
 #ifndef VKE_DEFAULT_CAMERA_FOV
-#define VKE_DEFAULT_CAMERA_FOV 45.0
+#define VKE_DEFAULT_CAMERA_FOV 45.0f
 #endif
 
 typedef struct _VkeCameraUniform
@@ -65,11 +65,6 @@ public:
   public:
     List();
     ~List();
-
-    VkeCamera* newCamera();
-    VkeCamera* newCamera(const VkeCamera::ID& inID);
-    void       addCamera(VkeCamera* const inData);
-    VkeCamera* getCamera(const ID& inID);
 
     void update();
 
@@ -120,30 +115,30 @@ private:
   void updateTransform();
   void updateViewProjection();
 
-  ID m_id;
+  ID m_id = 0;
 
-  nvmath::vec4f m_viewport;
+  nvmath::vec4f m_viewport{VKE_DEFAULT_CAMERA_VIEWPORT};
 
-  float m_near;
-  float m_far;
-  float m_fov;
-  float m_aspect;
+  float m_near   = VKE_DEFAULT_CAMERA_NEAR_PLANE;
+  float m_far    = VKE_DEFAULT_CAMERA_FAR_PLANE;
+  float m_fov    = VKE_DEFAULT_CAMERA_FOV;
+  float m_aspect = 1.0f;
 
-  nvmath::vec3f m_position;
-  nvmath::vec3f m_rotation;
+  nvmath::vec3f m_position{0.0f, 0.0f, 0.0f};
+  nvmath::vec3f m_rotation{0.0f, 0.0f, 0.0f};
 
   Transform m_transform;
 
   nvmath::mat4f m_projection;
-  bool          m_projection_needs_update;
-  bool          m_transform_needs_update;
+  bool          m_projection_needs_update = true;
+  bool          m_transform_needs_update  = true;
 
-  bool m_view_projection_needs_update;
+  bool m_view_projection_needs_update = true;
 
   nvmath::mat4f m_look_at_matrix;
-  bool          m_use_look_at;
+  bool          m_use_look_at = false;
 
-  float m_time;
+  float m_time = 0.0f;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,11 @@
 #include "Node.h"
 
 
-Node::Node()
-    : m_parent(0)
-    , m_position(0.0, 0.0, 0.0)
-    , m_rotation(0.0, 0.0, 0.0)
-    , m_scale(1.0, 1.0, 1.0)
-    , m_transform_needs_update(true)
-{
-}
+Node::Node() {}
 
 Node::Node(Node* inParent, const ID& inID)
-    : m_parent(inParent)
-    , m_id(inID)
-    , m_position(0.0, 0.0, 0.0)
-    , m_rotation(0.0, 0.0, 0.0)
-    , m_scale(1.0, 1.0, 1.0)
-    , m_transform_needs_update(true)
+    : m_id(inID)
+    , m_parent(inParent)
 {
 }
 

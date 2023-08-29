@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@
 
 VkeMesh::VkeMesh()
     : m_id(0)
-    , m_material_id(-1)
 {
 }
 
 VkeMesh::VkeMesh(const ID& inID)
     : m_id(inID)
-    , m_material_id(-1)
 {
 }
 
@@ -116,8 +114,7 @@ void VkeMesh::initBindCommand(VkCommandPool* inPool, VkQueue* inQueue)
   cmdBufInfo.commandPool        = *inPool;
   cmdBufInfo.commandBufferCount = 1;
 
-  VKA_CHECK_ERROR(vkAllocateCommandBuffers(getDefaultDevice(), &cmdBufInfo, &cmdBuf),
-                  "Could not create command buffer for init.\n");
+  VKA_CHECK_ERROR(vkAllocateCommandBuffers(getDefaultDevice(), &cmdBufInfo, &cmdBuf), "Could not create command buffer for init.\n");
 
 
   VkCommandBufferBeginInfo cmdBegin;
@@ -125,7 +122,6 @@ void VkeMesh::initBindCommand(VkCommandPool* inPool, VkQueue* inQueue)
   cmdBegin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   cmdBegin.flags = 0;
 
-  VkDeviceSize ofst = 0;
   VKA_CHECK_ERROR(vkBeginCommandBuffer(cmdBuf, &cmdBegin), "Could not begin command buffer.\n");
   m_vbo.bind(&cmdBuf);
   m_ibo.bind(&cmdBuf);
@@ -169,7 +165,7 @@ void VkeMesh::initDrawCommand(VkCommandBuffer* inCommand, VkBuffer& inIndirectBu
   VkDeviceSize sz   = sizeof(VkDrawIndexedIndirectCommand);
   VkDeviceSize ofst = sz * inIndex;
 
-  vkCmdDrawIndexedIndirect(*inCommand, inIndirectBuffer, ofst, 1, sz);
+  vkCmdDrawIndexedIndirect(*inCommand, inIndirectBuffer, ofst, 1, uint32_t(sz));
 }
 
 

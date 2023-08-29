@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,7 @@ protected:
 
 
 public:
-  VkeBuffer()
-      : m_backing_store(NULL)
-      , m_use_staging(false)
-  {
-  }
+  VkeBuffer() {}
 
   ~VkeBuffer() {}
 
@@ -54,10 +50,10 @@ public:
 
   struct Data
   {
-    VkBuffer               buffer;
-    VkDeviceMemory         memory;
-    VkBufferView           view;
-    VkDescriptorBufferInfo descriptor;
+    VkBuffer               buffer     = VK_NULL_HANDLE;
+    VkDeviceMemory         memory     = VK_NULL_HANDLE;
+    VkBufferView           view       = VK_NULL_HANDLE;
+    VkDescriptorBufferInfo descriptor = {};
   };
 
   void deleteBackingStore()
@@ -180,15 +176,15 @@ public:
 
 
 protected:
-  size_t m_data_size;
-  T*     m_backing_store;
+  size_t m_data_size     = 0;
+  T*     m_backing_store = nullptr;
   Data   m_data;
   Data   m_staging;
 
-  bool m_use_staging;
+  bool m_use_staging = false;
 
-  VkBufferUsageFlagBits    m_usage_flags;
-  VkMemoryPropertyFlagBits m_memory_flags;
+  VkBufferUsageFlags    m_usage_flags{};
+  VkMemoryPropertyFlags m_memory_flags{};
 };
 
 #endif

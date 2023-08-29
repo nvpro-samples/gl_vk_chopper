@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,19 +110,19 @@ protected:
 	*/
   VkeIBO m_ibo;
 
-  VertexObject* m_vertices;
-  uint32_t*     m_indices;
+  VertexObject* m_vertices = nullptr;
+  uint32_t*     m_indices  = nullptr;
 
-  uint32_t m_vertex_count;
-  uint32_t m_index_count;
+  uint32_t m_vertex_count = 0;
+  uint32_t m_index_count  = 0;
 
-  uint32_t m_first_index;
-  uint32_t m_first_vertex;
+  uint32_t m_first_index  = 0;
+  uint32_t m_first_vertex = 0;
 
-  VkCommandBuffer m_draw_cmd;
-  VkCommandBuffer m_bind_cmd;
+  VkCommandBuffer m_draw_cmd = nullptr;
+  VkCommandBuffer m_bind_cmd = nullptr;
 
-  int32_t m_material_id;
+  int32_t m_material_id = -1;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public:
   };
 
 private:
-  VkeSceneAnimation* m_parent;
+  VkeSceneAnimation* m_parent = nullptr;
 
   VkeAnimationChannel m_position;
   VkeAnimationChannel m_rotation;
@@ -73,7 +73,7 @@ private:
 
   Name m_name;
 
-  VkeNodeData* m_scene_node;
+  VkeNodeData* m_scene_node = nullptr;
 };
 
 

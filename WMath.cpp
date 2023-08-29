@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,15 +37,15 @@ Mat4x4f rotate4x4(const Quaternion<float> &q){
 
 	Mat4x4f out = identity4x4();
 
-	out.m_data[0] = 1.0 - (2.0*q.j*q.j + 2.0*q.k*q.k);
-	out.m_data[1] = 2.0*(q.i*q.j + 2.0*q.k*q.r);
-	out.m_data[2] = 2.0*(q.i*q.k - 2.0*q.j*q.r);
-	out.m_data[4] = 2.0*(q.i*q.j - 2.0*q.k*q.r);
-	out.m_data[5] = 1.0 - (2.0*q.i*q.i + 2.0*q.k*q.k);
-	out.m_data[6] = 2.0*(q.j*q.k + 2.0*q.i*q.r);
-	out.m_data[8] = 2.0*(q.i*q.k + 2.0*q.j*q.r);
-	out.m_data[9] = 2.0*(q.j*q.k - 2.0*q.i*q.r);
-	out.m_data[10] = 1.0 - (2.0*q.i*q.i + 2.0*q.j*q.j);
+	out.m_data[0] = 1.f - (2.f*q.j*q.j + 2.f*q.k*q.k);
+	out.m_data[1] = 2.f*(q.i*q.j + 2.f*q.k*q.r);
+	out.m_data[2] = 2.f*(q.i*q.k - 2.f*q.j*q.r);
+	out.m_data[4] = 2.f*(q.i*q.j - 2.f*q.k*q.r);
+	out.m_data[5] = 1.f - (2.f*q.i*q.i + 2.f*q.k*q.k);
+	out.m_data[6] = 2.f*(q.j*q.k + 2.f*q.i*q.r);
+	out.m_data[8] = 2.f*(q.i*q.k + 2.f*q.j*q.r);
+	out.m_data[9] = 2.f*(q.j*q.k - 2.f*q.i*q.r);
+	out.m_data[10] = 1.f - (2.f*q.i*q.i + 2.f*q.j*q.j);
 
 	return out;
 }
@@ -101,7 +101,7 @@ Mat4x4f scale4x4(const float inX, const float inY, const float inZ){
 
 Mat4x4f perspectiveProjection4x4f(const float inFOV, const float inAspect, const float inNear, const float inFar){
 	
-	float yScl = 1.0f / tan(inFOV*0.5f);
+	float yScl = 1.0f / tanf(inFOV*0.5f);
 	float xScl = yScl / inAspect;
 
 	Mat4x4f out = {

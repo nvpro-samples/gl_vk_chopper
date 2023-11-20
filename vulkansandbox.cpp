@@ -23,8 +23,6 @@
 
 #include <include_gl.h>
 
-#include <nvmath/nvmath_glsltypes.h>
-
 #include <nvh/cameracontrol.hpp>
 #include <nvh/geometry.hpp>
 #include <nvh/misc.hpp>
@@ -43,7 +41,7 @@
 
 using namespace nvh;
 using namespace nvgl;
-using namespace nvmath;
+using namespace glm;
 
 
 extern bool vulkanInitLibrary();
@@ -238,9 +236,9 @@ bool Sample::begin()
 
   m_control.m_sceneOrbit     = vec3(0.0f);
   m_control.m_sceneDimension = float(1.0);
-  nvmath::vec3f scenePos     = nvmath::vec3f(20.0, -1.0, 8.0);
+  glm::vec3 scenePos     = glm::vec3(20.0, -1.0, 8.0);
 
-  m_control.m_viewMatrix = nvmath::look_at(m_control.m_sceneOrbit - (scenePos * m_control.m_sceneDimension * 0.5f),
+  m_control.m_viewMatrix = glm::lookAt(m_control.m_sceneOrbit - (scenePos * m_control.m_sceneDimension * 0.5f),
                                            m_control.m_sceneOrbit, vec3(0, 1, 0));
 
 
@@ -251,8 +249,8 @@ bool Sample::begin()
 void Sample::think(double time)
 {
 
-  m_control.processActions(m_windowState.m_swapSize,
-                           nvmath::vec2f(m_windowState.m_mouseCurrent[0], m_windowState.m_mouseCurrent[1]),
+  m_control.processActions({m_windowState.m_swapSize[0], m_windowState.m_swapSize[1]},
+                           glm::vec2(m_windowState.m_mouseCurrent[0], m_windowState.m_mouseCurrent[1]),
                            m_windowState.m_mouseButtonFlags, m_windowState.m_mouseWheel);
 
   VulkanAppContext* ctxt = VulkanAppContext::GetInstance();

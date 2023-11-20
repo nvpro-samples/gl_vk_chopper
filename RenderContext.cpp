@@ -19,6 +19,7 @@
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
+#include <cstring>
 #include "RenderContext.h"
 
 RenderContext* RenderContext::Get()

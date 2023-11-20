@@ -23,9 +23,10 @@
 #define __H_VKA_UTILS_
 
 #include "nvh/nvprint.hpp"
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
+#include "glm/gtc/matrix_transform.hpp"
 
 #define VKA_CHECK_ERROR(func, msg)                                                                                     \
   {                                                                                                                    \
@@ -44,11 +45,11 @@ struct Projection
   float         nearplane;
   float         farplane;
   float         fov;
-  nvmath::mat4f matrix;
+  glm::mat4 matrix;
 
-  nvmath::mat4f proj;
-  nvmath::vec3f position;
-  nvmath::vec3f target;
+  glm::mat4 proj;
+  glm::vec3 position;
+  glm::vec3 target;
 
   Projection()
       : nearplane(0.1f)
@@ -62,12 +63,11 @@ struct Projection
   void update(int width, int height)
   {
 
-    nvmath::mat4f camView;
-    camView.identity();
+    glm::mat4 camView(1);
 
-    camView = nvmath::look_at(target - position, target, nvmath::vec3f(0, 1, 0));
+    camView = glm::lookAt(target - position, target, glm::vec3(0, 1, 0));
 
-    proj = nvmath::perspective(fov, float(width) / float(height), nearplane, farplane);
+    proj = glm::perspectiveRH_ZO(fov, float(width) / float(height), nearplane, farplane);
 
     matrix = proj * camView;
   }
@@ -78,7 +78,7 @@ struct ShadowProjection
   float         nearplane;
   float         farplane;
   float         fov;
-  nvmath::mat4f matrix;
+  glm::mat4 matrix;
 
   ShadowProjection()
       : nearplane(0.1f)
@@ -90,13 +90,13 @@ struct ShadowProjection
   void update(int width, int height)
   {
 
-    nvmath::mat4f camView;
-    camView.identity();
-    nvmath::vec3f viewDir = nvmath::vec3f(5 * 1.4, 20.5 * 1.4, 20 * 1.4);
+    glm::mat4 camView(1);
 
-    camView = nvmath::look_at(viewDir, nvmath::vec3f(0.0, 0.0, 0.0), nvmath::vec3f(0, 1, 0));
+    glm::vec3 viewDir = glm::vec3(5 * 1.4, 20.5 * 1.4, 20 * 1.4);
 
-    matrix = nvmath::perspective(fov, float(width) / float(height), nearplane, farplane);
+    camView = glm::lookAt(viewDir, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0, 1, 0));
+
+    matrix = glm::perspectiveRH_ZO(fov, float(width) / float(height), nearplane, farplane);
     matrix = matrix * camView;
   }
 };
@@ -179,15 +179,15 @@ typedef struct _BufferData
 
 typedef struct _UBOData
 {
-  nvmath::mat4f view_matrix;
-  nvmath::mat4f nml_matrix;
+  glm::mat4 view_matrix;
+  glm::mat4 nml_matrix;
 } UBOData;
 
 typedef struct _UBOCamera
 {
-  nvmath::mat4f proj_matrix;
-  nvmath::mat4f inv_proj_matrix;
-  nvmath::vec4f camera_position;
+  glm::mat4 proj_matrix;
+  glm::mat4 inv_proj_matrix;
+  glm::vec4 camera_position;
 } UBOCamera;
 
 typedef struct _UBOObject

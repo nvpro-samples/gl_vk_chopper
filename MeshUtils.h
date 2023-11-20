@@ -23,8 +23,9 @@
 #define __H_MESHUTILS_
 
 #include "WMath.h"
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 #include <string>
+#include "glm/gtc/quaternion.hpp"
 
 
 namespace meshimport {
@@ -64,9 +65,9 @@ struct TextureDataf
 
 struct MaterialDataf
 {
-  nvmath::vec4f diffuseColor;
-  nvmath::vec4f ambientColor;
-  nvmath::vec4f specularColor;
+  glm::vec4 diffuseColor;
+  glm::vec4 ambientColor;
+  glm::vec4 specularColor;
   float         opacity;
   float         shininess;
   float         reflectivity;
@@ -82,7 +83,7 @@ struct OutputMaterialDataf
 
 struct NodeAnimationKeyf
 {
-  nvmath::vec4f data;
+  glm::vec4 data;
   double        time;
 };
 
@@ -126,9 +127,9 @@ struct OutputMeshIndexDataf
 struct OutputNodeDataf
 {
   OutputMeshIndexDataf meshData;
-  nvmath::vec3f        position;
-  nvmath::vec3f        scale;
-  nvmath::quatf        rotation;
+  glm::vec3        position;
+  glm::vec3        scale;
+  glm::quat        rotation;
 
   std::string name;
 

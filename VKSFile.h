@@ -43,9 +43,9 @@ struct VKSNodeRecord
 {
   uint32_t      childCount;  //4
   uint32_t      index;       //8
-  nvmath::vec3f position;    //20
-  nvmath::quatf rotation;    //36
-  nvmath::vec3f scale;       //48
+  glm::vec3 position;    //20
+  glm::quat rotation;    //36
+  glm::vec3 scale;       //48
   char          name[32];    //70
 
   uint8_t meshCount;       //71
@@ -70,9 +70,9 @@ struct VKSMeshRecord
 
 struct VKSMaterialRecord
 {
-  nvmath::vec4f diffuseColor;
-  nvmath::vec4f ambientColor;
-  nvmath::vec4f specularColor;
+  glm::vec4 diffuseColor;
+  glm::vec4 ambientColor;
+  glm::vec4 specularColor;
   float         opacity;
   float         shininess;
   float         reflectivity;
@@ -100,7 +100,7 @@ struct VKSAnimationNodeRecord
 
 struct VKSAnimationKeyRecord
 {
-  nvmath::vec4f key{0.f, 0.f, 0.f, 0.f};
+  glm::vec4 key{0.f, 0.f, 0.f, 0.f};
   double        time = 0.;
 };
 

@@ -43,12 +43,12 @@ class VkeCamera;
 struct FlightPath
 {
 
-  nvmath::vec2f m_start_position;
-  nvmath::vec2f m_end_position;
-  nvmath::vec2f m_position;
-  nvmath::vec2f m_direction;
-  nvmath::vec2f m_range;
-  float         m_t;
+  glm::vec2 m_start_position;
+  glm::vec2 m_end_position;
+  glm::vec2 m_position;
+  glm::vec2 m_direction;
+  glm::vec2 m_range;
+  float     m_t;
 
   float m_velocity;
   float m_altitude;
@@ -64,7 +64,7 @@ struct FlightPath
   {
   }
 
-  FlightPath(nvmath::vec2f& initialPosition, nvmath::vec2f& endPosition, float startT = 0.0, float inAltitude = 10, float inVelocity = 0.001)
+  FlightPath(glm::vec2& initialPosition, glm::vec2& endPosition, float startT = 0.0, float inAltitude = 10, float inVelocity = 0.001)
       : m_start_position(initialPosition)
       , m_end_position(endPosition)
       , m_position(0.0, 0.0)
@@ -78,7 +78,7 @@ struct FlightPath
 
   ~FlightPath() {}
 
-  void update(nvmath::mat4f* inMat, float inT)
+  void update(glm::mat4* inMat, float inT)
   {
 
     m_t += (m_velocity);
@@ -86,18 +86,17 @@ struct FlightPath
       m_t = 0.0;
 
     m_position  = (m_range * m_t) + m_start_position;
-    m_direction = nvmath::normalize(m_range);
+    m_direction = glm::normalize(m_range);
 
     float yRot = atan2(m_range.x, m_range.y);
 
-    nvmath::mat4f rotMat;
-    rotMat.identity();
-    rotMat.translate(nvmath::vec3f(m_position.x, m_altitude, m_position.y));
+    glm::mat4 rotMat(1);
+    rotMat = glm::translate(rotMat, glm::vec3(m_position.x, m_altitude, m_position.y));
 
 
-    inMat->identity();
-    inMat->rotate(yRot, nvmath::vec3f(0.0, 1.0, 0.0));
-    inMat->rotate(-90.f * nv_to_rad, nvmath::vec3f(1.0, 0.0, 0.0));
+    *inMat = glm::mat4(1);
+    *inMat = glm::rotate(*inMat, yRot, glm::vec3(0.0, 1.0, 0.0));
+    *inMat = glm::rotate(*inMat, glm::radians(-90.f), glm::vec3(1.0, 0.0, 0.0));
     *inMat = rotMat * (*inMat);
   }
 };
@@ -124,7 +123,7 @@ private:
   VkCommandBuffer         m_draw_command[COMMAND_BUFFER_COUNT];
   VkCommandPool           m_command_pool;
 
-  nvmath::mat4f m_draw_transform;
+  glm::mat4 m_draw_transform;
 
   bool m_buffer_ready;
 };
@@ -160,7 +159,7 @@ public:
 
   virtual void present();
   virtual void initShaders(nvvk::ShaderModuleManager& inShaderModuleManager);
-  virtual void setCameraLookAt(nvmath::mat4f& inMat);
+  virtual void setCameraLookAt(glm::mat4& inMat);
 
   VkDescriptorSet getSceneDescriptorSet() { return m_scene_descriptor_set; }
 

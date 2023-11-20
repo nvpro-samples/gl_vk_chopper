@@ -23,7 +23,7 @@
 #define __H_VULKAN_APP_CONTEXT_
 
 #include <chrono>
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 #include <nvvk/shadermodulemanager_vk.hpp>
 #include <vulkan/vulkan.h>
 
@@ -65,16 +65,16 @@ public:
   void         resize(uint32_t inWidth, uint32_t inHeight);
   VkeMaterial* getMaterial(VkeMaterial::ID inID);
 
-  nvmath::vec4f getRotorPos()
+  glm::vec4 getRotorPos()
   {
-    nvmath::vec4f pos(0.0f, 0.0f, -1.0f, 1.0f);
+    glm::vec4 pos(0.0f, 0.0f, -1.0f, 1.0f);
     return m_rotor_node->getNode()->worldPosition(pos);
   }
 
   VkeVBO* getVBO() { return &m_global_vbo; }
   VkeIBO* getIBO() { return &m_global_ibo; }
 
-  void setCameraMatrix(nvmath::mat4f& inMat);
+  void setCameraMatrix(glm::mat4& inMat);
 
   float getOpacity(uint32_t inMatID) { return m_materials.getMaterial(inMatID)->getBackingStore()->opacity; }
 

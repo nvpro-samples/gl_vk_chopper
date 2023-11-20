@@ -20,7 +20,8 @@
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #include "Transform.h"
-
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 Transform::Transform()
 {
@@ -31,7 +32,7 @@ Transform::Transform()
 void Transform::reset()
 {
 
-  m_matrix.identity();
+  m_matrix = glm::mat4(1);
 }
 
 void Transform::update(Transform* inParent)
@@ -46,47 +47,45 @@ void Transform::update(Transform* inParent)
 
   m_inverse = m_transform;
 
-  m_inverse = nvmath::invert(m_inverse);
-  m_inverse = nvmath::transpose(m_inverse);
+  m_inverse = glm::inverse(m_inverse);
+  m_inverse = glm::transpose(m_inverse);
 
-  m_inverse.a30 = 0.0;
-  m_inverse.a31 = 0.0;
-  m_inverse.a32 = 0.0;
+  m_inverse[3] = glm::vec4(0,0,0,1);
 }
 
-void Transform::translate(nvmath::vec4f& inPosition)
+void Transform::translate(glm::vec4& inPosition)
 {
-  nvmath::vec3f vec = nvmath::vec3f(inPosition);
-  m_matrix.translate(vec);
+  glm::vec3 vec = glm::vec3(inPosition);
+  m_matrix = glm::translate(m_matrix, vec);
 }
 
 void Transform::translate(float inX, float inY, float inZ)
 {
-  nvmath::vec3f vec = nvmath::vec3f(inX, inY, inZ);
-  m_matrix.translate(vec);
+  glm::vec3 vec = glm::vec3(inX, inY, inZ);
+  m_matrix = glm::translate(m_matrix, vec);
 }
 
-void Transform::rotate(const float inValue, nvmath::vec3f& inBasis)
+void Transform::rotate(const float inValue, glm::vec3& inBasis)
 {
 
 
-  m_matrix.rotate(inValue, inBasis);
+  m_matrix = glm::rotate(m_matrix, inValue, inBasis);
 }
 
-void Transform::rotate(nvmath::quatf& inQuat)
+void Transform::rotate(glm::quat& inQuat)
 {
 
-  m_matrix.rotate(inQuat);
+  m_matrix = m_matrix * glm::mat4_cast(inQuat);
 }
 
-void Transform::scale(const nvmath::vec3f& inScale)
+void Transform::scale(const glm::vec3& inScale)
 {
-  m_matrix.scale(inScale);
+  m_matrix = glm::scale(m_matrix, inScale);
 }
 
 void Transform::scale(const float inX, const float inY, const float inZ)
 {
-  scale(nvmath::vec3f(inX, inY, inZ));
+  scale(glm::vec3(inX, inY, inZ));
 }
 
 

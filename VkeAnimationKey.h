@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 #include <stdint.h>
 #include <vector>
 
@@ -42,7 +42,7 @@ public:
       , m_time(0.)
   {
   }
-  VkeAnimationKey(double& inTime, nvmath::vec4f& inData)
+  VkeAnimationKey(double& inTime, glm::vec4& inData)
       : m_value(inData)
       , m_time(inTime)
   {
@@ -50,7 +50,7 @@ public:
   ~VkeAnimationKey() {}
 
   double&        getTime();
-  nvmath::vec4f& getValue();
+  glm::vec4& getValue();
 
   class List
   {
@@ -58,7 +58,7 @@ public:
     List() {}
     ~List() {}
 
-    VkeAnimationKey* newKey(double& inTime, nvmath::vec4f& inData);
+    VkeAnimationKey* newKey(double& inTime, glm::vec4& inData);
 
     VkeAnimationKey* getKey(const ID& inID);
 
@@ -69,7 +69,7 @@ public:
 
 
 private:
-  nvmath::vec4f m_value;
+  glm::vec4 m_value;
   double        m_time;
 };
 

@@ -28,11 +28,11 @@
 #include "VkeBuffer.h"
 #include "VkeIBO.h"
 #include "VkeVBO.h"
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 
 typedef struct _QuadUniform
 {
-  nvmath::mat4f view_matrix;
+  glm::mat4 view_matrix;
 } QuadUniform;
 
 class VkeScreenQuad : public VkeBuffer<QuadUniform>

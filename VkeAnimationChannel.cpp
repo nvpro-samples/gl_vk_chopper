@@ -21,6 +21,8 @@
 
 #include "VkeAnimationChannel.h"
 #include "VkeSceneAnimation.h"
+#include "glm/gtc/quaternion.hpp"
+
 
 
 double& VkeAnimationChannel::getDuration()
@@ -38,7 +40,7 @@ void VkeAnimationChannel::setParent(VkeSceneAnimation* inParent)
   m_parent = inParent;
 }
 
-VkeAnimationKey* VkeAnimationChannel::newKey(double& inTime, nvmath::vec4f& inData)
+VkeAnimationKey* VkeAnimationChannel::newKey(double& inTime, glm::vec4& inData)
 {
   if(m_parent)
   {
@@ -47,24 +49,24 @@ VkeAnimationKey* VkeAnimationChannel::newKey(double& inTime, nvmath::vec4f& inDa
   return m_keys.newKey(inTime, inData);
 }
 
-nvmath::vec4f cubicLerp(nvmath::vec4f inA, nvmath::vec4f inB, float inT)
+glm::vec4 cubicLerp(glm::vec4 inA, glm::vec4 inB, float inT)
 {
   float c = (3.0f - 2.0f * inT) * inT * inT;
 
   inA *= (float)(1.0f - c);
   inB *= (float)c;
-  nvmath::vec4f outValue = inA;
+  glm::vec4 outValue = inA;
   outValue += inB;
   return outValue;
 }
 
-nvmath::quatf cubicLerp(nvmath::quatf inA, nvmath::quatf inB, float inT)
+glm::quat cubicLerp(glm::quat inA, glm::quat inB, float inT)
 {
   float c = (3.0f - 2.0f * inT) * inT * inT;
-  return nvmath::slerp_quats(c, inA, inB);
+  return glm::slerp(inA, inB, c);
 }
 
-nvmath::quatf VkeAnimationChannel::currentQuatValue()
+glm::quat VkeAnimationChannel::currentQuatValue()
 {
 
 
@@ -76,25 +78,25 @@ nvmath::quatf VkeAnimationChannel::currentQuatValue()
   //Therefore there should not have been a channel
   //for this node in the first place.
   if(!pair.low && !pair.high)
-    return nvmath::quatf();
+    return glm::quat();
   if(!pair.high)
   {
-    nvmath::vec4f vValue = pair.low->getValue();
-    nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+    glm::vec4 vValue = pair.low->getValue();
+    glm::quat qValue(vValue.x, vValue.y, vValue.z, vValue.w);
     return qValue;
   }
   if(!pair.low)
   {
-    nvmath::vec4f vValue = pair.high->getValue();
-    nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+    glm::vec4 vValue = pair.high->getValue();
+    glm::quat qValue(vValue.x, vValue.y, vValue.z, vValue.w);
     return qValue;
   }
 
   float timeDelta = float(pair.high->getTime() - pair.low->getTime());
   if(timeDelta == 0.0)
   {
-    nvmath::vec4f vValue = pair.low->getValue();
-    nvmath::quatf qValue(vValue.x, vValue.y, vValue.z, vValue.w);
+    glm::vec4 vValue = pair.low->getValue();
+    glm::quat qValue(vValue.x, vValue.y, vValue.z, vValue.w);
     return qValue;
   }
 
@@ -102,18 +104,18 @@ nvmath::quatf VkeAnimationChannel::currentQuatValue()
 
   float timeScale = durationDelta / timeDelta;
 
-  nvmath::vec4f lowVal  = pair.low->getValue();
-  nvmath::vec4f highVal = pair.high->getValue();
+  glm::vec4 lowVal  = pair.low->getValue();
+  glm::vec4 highVal = pair.high->getValue();
 
-  nvmath::quatf quatA(lowVal.x, lowVal.y, lowVal.z, lowVal.w);
-  nvmath::quatf quatB(highVal.x, highVal.y, highVal.z, highVal.w);
+  glm::quat quatA(lowVal.x, lowVal.y, lowVal.z, lowVal.w);
+  glm::quat quatB(highVal.x, highVal.y, highVal.z, highVal.w);
 
-  nvmath::quatf outQuat = cubicLerp(quatA, quatB, timeScale);
+  glm::quat outQuat = cubicLerp(quatA, quatB, timeScale);
 
   return outQuat;
 }
 
-nvmath::vec4f VkeAnimationChannel::currentValue()
+glm::vec4 VkeAnimationChannel::currentValue()
 {
 
 
@@ -125,7 +127,7 @@ nvmath::vec4f VkeAnimationChannel::currentValue()
   //Therefore there should not have been a channel
   //for this node in the first place.
   if(!pair.low && !pair.high)
-    return nvmath::vec4f(0.0, 0.0, 0.0);
+    return glm::vec4(0.0f);
   if(!pair.high)
     return pair.low->getValue();
   if(!pair.low)
@@ -139,10 +141,10 @@ nvmath::vec4f VkeAnimationChannel::currentValue()
 
   float timeScale = durationDelta / timeDelta;
 
-  nvmath::vec4f lowVal  = pair.low->getValue();
-  nvmath::vec4f highVal = pair.high->getValue();
+  glm::vec4 lowVal  = pair.low->getValue();
+  glm::vec4 highVal = pair.high->getValue();
 
-  nvmath::vec4f outVal = cubicLerp(lowVal, highVal, timeScale);
+  glm::vec4 outVal = cubicLerp(lowVal, highVal, timeScale);
 
   //	lowVal *= (float)(1.0 - timeScale);
   //	highVal *= (float)timeScale;

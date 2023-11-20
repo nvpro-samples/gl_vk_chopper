@@ -34,10 +34,10 @@
 
 typedef struct _VkeNodeUniform
 {
-  nvmath::mat4f view_matrix;
-  nvmath::mat4f normal_matrix;
-  nvmath::vec4i lookup;
-  nvmath::vec4f p1[3];
+  glm::mat4  view_matrix;
+  glm::mat4  normal_matrix;
+  glm::ivec4 lookup;
+  glm::vec4  p1[3];
 } VkeNodeUniform;
 
 

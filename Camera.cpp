@@ -20,7 +20,7 @@
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #include "Camera.h"
-
+#include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera()
     : Node()
@@ -66,7 +66,7 @@ void Camera::updateProjection()
 
   float aspect = vw / vh;
 
-  m_projection = nvmath::perspective(m_fov, aspect, m_near, m_far);
+  m_projection = glm::perspectiveRH_ZO(glm::radians(m_fov), aspect, m_near, m_far);
 
   m_projection_dirty = false;
 }

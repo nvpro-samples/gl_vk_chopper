@@ -65,7 +65,7 @@ public:
 
   virtual void present()                                                     = 0;
   virtual void initShaders(nvvk::ShaderModuleManager& inShaderModuleManager) = 0;
-  virtual void setCameraLookAt(nvmath::mat4f& inMat)                         = 0;
+  virtual void setCameraLookAt(glm::mat4& inMat)                         = 0;
 
   VkPipeline getPipeline() { return m_pipeline; }
 

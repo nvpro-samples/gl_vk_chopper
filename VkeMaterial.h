@@ -28,14 +28,14 @@
 #include "VkeBuffer.h"
 #include "VkeTexture.h"
 #include <map>
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 #include <vector>
 
 typedef struct VkeMaterialUniform
 {
-  //nvmath::vec4f diffuseColor;
-  //nvmath::vec4f ambientColor;
-  //nvmath::vec4f specularColor;
+  //glm::vec4 diffuseColor;
+  //glm::vec4 ambientColor;
+  //glm::vec4 specularColor;
   float reflectivity;
   float shininess;
   float opacity;

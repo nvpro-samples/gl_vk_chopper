@@ -380,17 +380,17 @@ void vkeGameRendererDynamic::initRenderer()
   m_is_first_frame = true;
 
 
-  nvmath::vec4f table[128][128];
+  glm::vec4 table[128][128];
 
   for(int v = 0; v < 128; ++v)
   {
     for(int u = 0; u < 128; ++u)
     {
-      nvmath::vec2f vctr(quickRandomUVD(), quickRandomUVD());
-      vctr = nvmath::normalize(vctr);
+      glm::vec2 vctr(quickRandomUVD(), quickRandomUVD());
+      vctr = glm::normalize(vctr);
       // VK_FORMAT_R32G32B32_SFLOAT isn't so widely supported, so we use
       // VK_FORMAT_R32G32B32A32_SFLOAT instead.
-      table[u][v] = nvmath::vec4f(vctr.x, vctr.y, vctr.x, 0.f);
+      table[u][v] = glm::vec4(vctr.x, vctr.y, vctr.x, 0.f);
     }
   }
 
@@ -405,8 +405,8 @@ void vkeGameRendererDynamic::initRenderer()
 
   for(uint32_t i = 0; i < m_instance_count; ++i)
   {
-    nvmath::vec2f initPos(quickRandomUVD() * 100.0f, -200.f + (quickRandomUVD() * 20.f));
-    nvmath::vec2f endPos(quickRandomUVD() * 100.0f, 200.f + (quickRandomUVD() * 20.f));
+    glm::vec2 initPos(quickRandomUVD() * 100.0f, -200.f + (quickRandomUVD() * 20.f));
+    glm::vec2 endPos(quickRandomUVD() * 100.0f, 200.f + (quickRandomUVD() * 20.f));
     m_flight_paths[i] =
         std::make_unique<FlightPath>(initPos, endPos, quickRandomUVD() * 0.5f + 0.5f, quickRandomUVD() * 4.f + 10.f);
   }
@@ -522,13 +522,13 @@ void vkeGameRendererDynamic::update()
 
   size_t cnt = m_node_data->count();
 
-  nvmath::mat4f tempMatrix;
+  glm::mat4 tempMatrix;
 
 
   for(size_t i = 0; i < m_instance_count; ++i)
   {
     size_t         pointerOffset = (sizeof(VkeNodeUniform) * cnt) + (64 * i);
-    nvmath::mat4f* matPtr        = (nvmath::mat4f*)(((uint8_t*)m_uniforms_local) + pointerOffset);
+    glm::mat4* matPtr        = (glm::mat4*)(((uint8_t*)m_uniforms_local) + pointerOffset);
     m_flight_paths[i]->update(matPtr, sTime);
   }
 
@@ -1289,7 +1289,7 @@ void vkeGameRendererDynamic::initTerrainCommand()
 
 void vkeGameRendererDynamic::initCamera()
 {
-  nvmath::vec4f zp(0.0, 0.0, 0.0, 1.0);
+  glm::vec4 zp(0.0, 0.0, 0.0, 1.0);
 
   m_camera = new VkeCamera(1, -20.0, -1.0, -8.0);
   m_camera->lookAt(zp);
@@ -1463,7 +1463,7 @@ void vkeGameRendererDynamic::releaseFramebuffer()
   m_framebuffers[1] = NULL;
 }
 
-void vkeGameRendererDynamic::setCameraLookAt(nvmath::mat4f& inMat)
+void vkeGameRendererDynamic::setCameraLookAt(glm::mat4& inMat)
 {
   m_camera->setLookAtMatrix(inMat);
 }

@@ -36,7 +36,7 @@ void VkeScreenQuad::initQuadData()
   m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
   initBackingStore(sizeof(QuadUniform));
 
-  m_backing_store->view_matrix.identity();
+  m_backing_store->view_matrix = glm::mat4(1);
 
   initVKBufferData();
 

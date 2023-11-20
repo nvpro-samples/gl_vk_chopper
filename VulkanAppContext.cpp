@@ -455,7 +455,7 @@ VkeMaterial* VulkanAppContext::getMaterial(VkeMaterial::ID inID)
   return m_materials.getMaterial(inID);
 }
 
-void VulkanAppContext::setCameraMatrix(nvmath::mat4f& inMat)
+void VulkanAppContext::setCameraMatrix(glm::mat4& inMat)
 {
   ((RENDERER*)m_renderer)->setCameraLookAt(inMat);
 }

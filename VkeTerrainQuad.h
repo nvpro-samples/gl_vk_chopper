@@ -28,11 +28,11 @@
 #include "VkeBuffer.h"
 #include "VkeIBO.h"
 #include "VkeVBO.h"
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 
 typedef struct _TerrainUniform
 {
-  nvmath::mat4f view_matrix;
+  glm::mat4 view_matrix;
 } TerrainUniform;
 
 class VkeTerrainQuad : public VkeBuffer<TerrainUniform>

@@ -20,6 +20,7 @@
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #include "VkeCamera.h"
+#include "glm/gtc/quaternion.hpp"
 
 
 VkeCamera::VkeCamera()
@@ -63,7 +64,7 @@ void VkeCamera::updateProjection()
     return;
   m_aspect = m_viewport.z / m_viewport.w;
 
-  m_projection = nvmath::perspective(m_fov, m_aspect, m_near, m_far);
+  m_projection = glm::perspectiveRH_ZO(m_fov, m_aspect, m_near, m_far);
 
   m_projection_needs_update      = false;
   m_view_projection_needs_update = true;
@@ -79,10 +80,10 @@ void VkeCamera::updateTransform()
   if(!m_use_look_at)
   {
 
-    nvmath::vec4f tra = nvmath::vec4f(m_position, 1.0);
-    nvmath::vec3f fwd(0.0, 0.0, 1.0);
-    nvmath::vec3f up(0.0, 0.0, 0.0);
-    nvmath::vec3f lft(0.0, 0.0, 0.0);
+    glm::vec4 tra = glm::vec4(m_position, 1.0);
+    glm::vec3 fwd(0.0, 0.0, 1.0);
+    glm::vec3 up(0.0, 0.0, 0.0);
+    glm::vec3 lft(0.0, 0.0, 0.0);
     m_transform.translate(tra);
     m_transform.rotate(m_rotation.z, fwd);
     m_transform.rotate(m_rotation.y, up);
@@ -106,15 +107,15 @@ void VkeCamera::updateViewProjection()
 
   m_backing_store->view_proj_matrix = m_projection;
   m_backing_store->view_proj_matrix *= m_transform.getTransform();
-  m_backing_store->view_matrix = nvmath::invert(m_transform.getTransform());
+  m_backing_store->view_matrix = glm::inverse(m_transform.getTransform());
 
-  m_backing_store->view_matrix.a03 = 0.0;
-  m_backing_store->view_matrix.a13 = 0.0;
-  m_backing_store->view_matrix.a23 = 0.0;
+  m_backing_store->view_matrix[0][3] = 0.0;
+  m_backing_store->view_matrix[1][3] = 0.0;
+  m_backing_store->view_matrix[2][3] = 0.0;
 
   m_time += 0.01f;
 
-  m_backing_store->camera_position = nvmath::vec4f(m_position, m_time);
+  m_backing_store->camera_position = glm::vec4(m_position, m_time);
 
   m_view_projection_needs_update = false;
 }
@@ -164,10 +165,9 @@ void VkeCamera::setRotation(float inX, float inY, float inZ)
   m_transform_needs_update = true;
 }
 
-void VkeCamera::setRotation(nvmath::quatf& inQuat)
+void VkeCamera::setRotation(glm::quat& inQuat)
 {
-  nvmath::vec3f angles;
-  inQuat.to_euler_xyz(angles);
+  glm::vec3 angles = glm::eulerAngles(inQuat);
   setRotation(angles.x, angles.y, angles.z);
 
   m_transform_needs_update = true;
@@ -206,36 +206,36 @@ float VkeCamera::getFOV()
   return m_fov;
 }
 
-nvmath::vec4f VkeCamera::worldPosition()
+glm::vec4 VkeCamera::worldPosition()
 {
-  nvmath::vec4f zero(0.0, 0.0, 0.0, 1.0);
+  glm::vec4 zero(0.0, 0.0, 0.0, 1.0);
   return worldPosition(zero);
 }
 
-nvmath::vec4f VkeCamera::worldPosition(nvmath::vec4f& inPosition)
+glm::vec4 VkeCamera::worldPosition(glm::vec4& inPosition)
 {
   return m_transform(inPosition);
 }
 
-void VkeCamera::lookAt(nvmath::vec4f& inPos)
+void VkeCamera::lookAt(glm::vec4& inPos)
 {
   m_use_look_at = true;
-  nvmath::mat4f camView;
-  m_look_at_matrix.identity();
+  glm::mat4 camView;
+  m_look_at_matrix = glm::mat4(1);
 
 
-  m_look_at_matrix = nvmath::look_at(nvmath::vec3f(inPos) - m_position, nvmath::vec3f(inPos), nvmath::vec3f(0, 1, 0));
-  nvmath::vec3f zro(0.0f);
-  m_position = m_look_at_matrix.get_translation(zro);
+  m_look_at_matrix = glm::lookAt(glm::vec3(inPos) - m_position, glm::vec3(inPos), glm::vec3(0, 1, 0));
+  glm::vec3 zro(0.0f);
+  m_position = m_look_at_matrix[3];
 }
 
-void VkeCamera::setLookAtMatrix(nvmath::mat4f& inMat)
+void VkeCamera::setLookAtMatrix(glm::mat4& inMat)
 {
   m_look_at_matrix  = inMat;
-  nvmath::mat4f inv = nvmath::invert(inMat);
-  m_position.x      = inv.a03;
-  m_position.y      = inv.a13;
-  m_position.z      = inv.a23;
+  glm::mat4 inv = glm::inverse(inMat);
+  m_position.x      = inv[0][3];
+  m_position.y      = inv[1][3];
+  m_position.z      = inv[2][3];
 
   m_use_look_at = true;
 }

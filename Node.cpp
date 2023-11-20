@@ -20,6 +20,7 @@
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
 #include "Node.h"
+#include "glm/gtc/quaternion.hpp"
 
 
 Node::Node() {}
@@ -44,10 +45,9 @@ bool Node::update(bool inUpdateChildren)
       parentTransform = &m_parent->GetTransform();
 
     m_transform.reset();
-    nvmath::vec4f tra = nvmath::vec4f(m_position, 1.0);
+    glm::vec4 tra = glm::vec4(m_position, 1.0);
     m_transform.translate(tra);
-    nvmath::quatf q;
-    q.from_euler_xyz(m_rotation);
+    glm::quat q(m_rotation);
     m_transform.rotate(q);
 
     m_transform.update(parentTransform);
@@ -66,14 +66,14 @@ bool Node::update(bool inUpdateChildren)
   return updated;
 }
 
-nvmath::vec4f Node::worldPosition()
+glm::vec4 Node::worldPosition()
 {
-  nvmath::vec4f outPosition(0.0, 0.0, 0.0, 1.0);
+  glm::vec4 outPosition(0.0, 0.0, 0.0, 1.0);
 
   return m_transform(outPosition);
 }
 
-nvmath::vec4f Node::worldPosition(nvmath::vec4f& inPosition)
+glm::vec4 Node::worldPosition(glm::vec4& inPosition)
 {
   return m_transform(inPosition);
 }
@@ -88,10 +88,9 @@ void Node::setPosition(float inX, float inY, float inZ)
   m_transform_needs_update = true;
 }
 
-void Node::setRotation(nvmath::quatf& inQuat)
+void Node::setRotation(glm::quat& inQuat)
 {
-  nvmath::vec3f angles;
-  inQuat.to_euler_xyz(angles);
+  glm::vec3 angles = glm::eulerAngles(inQuat);
   setRotation(angles.x, angles.y, angles.z);
 }
 

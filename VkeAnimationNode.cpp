@@ -21,6 +21,7 @@
 
 #include "VkeAnimationNode.h"
 #include "Node.h"
+#include "glm/gtc/quaternion.hpp"
 
 VkeAnimationNode::VkeAnimationNode() {}
 
@@ -72,15 +73,15 @@ void VkeAnimationNode::update()
   if(!node)
     return;
 
-  nvmath::vec4f curValue;
+  glm::vec4 curValue;
 
   curValue = m_position.currentValue();
 
   node->setPosition(curValue.x, curValue.y, curValue.z);
 
 
-  nvmath::quatf curQuat = m_rotation.currentQuatValue();
-  curQuat.to_euler_xyz(&curValue.x);
+  glm::quat curQuat = m_rotation.currentQuatValue();
+  curValue          = glm::vec4(glm::eulerAngles(curQuat), curValue.w);
 
   node->setRotation(curValue.x, curValue.y, curValue.z);
 

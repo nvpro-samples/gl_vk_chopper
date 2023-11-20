@@ -40,13 +40,13 @@ public:
   }
   ~VkeAnimationChannel() {}
 
-  nvmath::vec4f currentValue();
+  glm::vec4 currentValue();
 
-  nvmath::quatf currentQuatValue();
+  glm::quat currentQuatValue();
 
   VkeAnimationKey::List& Keys();
 
-  VkeAnimationKey* newKey(double& inTime, nvmath::vec4f& inData);
+  VkeAnimationKey* newKey(double& inTime, glm::vec4& inData);
 
   double& getDuration();
 

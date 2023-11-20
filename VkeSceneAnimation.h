@@ -26,7 +26,7 @@
 
 
 #include "VkeAnimationNode.h"
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 
 class VkeSceneAnimation
 {

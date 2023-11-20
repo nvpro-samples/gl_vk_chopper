@@ -26,12 +26,12 @@ double& VkeAnimationKey::getTime()
   return m_time;
 }
 
-nvmath::vec4f& VkeAnimationKey::getValue()
+glm::vec4& VkeAnimationKey::getValue()
 {
   return m_value;
 }
 
-VkeAnimationKey* VkeAnimationKey::List::newKey(double& inTime, nvmath::vec4f& inData)
+VkeAnimationKey* VkeAnimationKey::List::newKey(double& inTime, glm::vec4& inData)
 {
   VkeAnimationKey* outKey = new VkeAnimationKey(inTime, inData);
   m_data.push_back(outKey);

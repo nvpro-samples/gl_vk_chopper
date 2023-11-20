@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 
 class Transform
 {
@@ -34,42 +34,42 @@ public:
 
   void reset();
   void update(Transform* inParent = NULL);
-  void translate(nvmath::vec4f& inPosition);
+  void translate(glm::vec4& inPosition);
   void translate(float inX, float inY, float inZ);
 
-  void rotate(const float inValue, nvmath::vec3f& inBasis);
-  void rotate(nvmath::quatf& inQuaterion);
+  void rotate(const float inValue, glm::vec3& inBasis);
+  void rotate(glm::quat& inQuaterion);
 
-  void scale(const nvmath::vec3f& inScale);
+  void scale(const glm::vec3& inScale);
   void scale(const float inX, const float inY, const float inZ);
 
-  nvmath::vec4f operator()(nvmath::vec4f& rhs)
+  glm::vec4 operator()(glm::vec4& rhs)
   {
-    nvmath::vec4f out = m_transform * rhs;
+    glm::vec4 out = m_transform * rhs;
     return out;
   }
 
-  nvmath::mat4f operator()(nvmath::mat4f& rhs)
+  glm::mat4 operator()(glm::mat4& rhs)
   {
-    nvmath::mat4f out = rhs * m_transform;
+    glm::mat4 out = rhs * m_transform;
     return out;
   }
 
-  nvmath::vec4f operator[](nvmath::vec4f& rhs)
+  glm::vec4 operator[](glm::vec4& rhs)
   {
-    nvmath::vec4f out = m_inverse * rhs;
+    glm::vec4 out = m_inverse * rhs;
     return out;
   }
 
-  nvmath::mat4f& getTransform() { return m_transform; }
-  nvmath::mat4f& getInverse() { return m_inverse; }
+  glm::mat4& getTransform() { return m_transform; }
+  glm::mat4& getInverse() { return m_inverse; }
 
-  void setMatrix(nvmath::mat4f& inMatrix) { m_matrix = inMatrix; }
+  void setMatrix(glm::mat4& inMatrix) { m_matrix = inMatrix; }
 
 private:
-  nvmath::mat4f m_transform;
-  nvmath::mat4f m_inverse;
-  nvmath::mat4f m_matrix;
+  glm::mat4 m_transform;
+  glm::mat4 m_inverse;
+  glm::mat4 m_matrix;
 };
 
 #endif

@@ -27,7 +27,7 @@
 #include "Transform.h"
 #include "VkeBuffer.h"
 #include <map>
-#include <nvmath/nvmath.h>
+#include <glm/glm.hpp>
 
 
 #ifndef VKE_DEFAULT_CAMERA_VIEWPORT
@@ -48,9 +48,9 @@
 
 typedef struct _VkeCameraUniform
 {
-  nvmath::mat4f view_proj_matrix;
-  nvmath::mat4f view_matrix;
-  nvmath::vec4f camera_position;
+  glm::mat4 view_proj_matrix;
+  glm::mat4 view_matrix;
+  glm::vec4 camera_position;
 } VkeCameraUniform;
 
 class VkeCamera : public VkeBuffer<VkeCameraUniform>
@@ -94,7 +94,7 @@ public:
 
   void setPosition(float inX, float inY, float inZ);
   void setRotation(float inX, float inY, float inZ);
-  void setRotation(nvmath::quatf& inQuat);
+  void setRotation(glm::quat& inQuat);
 
   void setNear(float inNear);
   void setFar(float inFar);
@@ -104,11 +104,11 @@ public:
   float getFar();
   float getFOV();
 
-  nvmath::vec4f worldPosition();
-  nvmath::vec4f worldPosition(nvmath::vec4f& inPosition);
+  glm::vec4 worldPosition();
+  glm::vec4 worldPosition(glm::vec4& inPosition);
 
-  void lookAt(nvmath::vec4f& inPosition);
-  void setLookAtMatrix(nvmath::mat4f& inMat);
+  void lookAt(glm::vec4& inPosition);
+  void setLookAtMatrix(glm::mat4& inMat);
 
 private:
   void updateProjection();
@@ -117,25 +117,25 @@ private:
 
   ID m_id = 0;
 
-  nvmath::vec4f m_viewport{VKE_DEFAULT_CAMERA_VIEWPORT};
+  glm::vec4 m_viewport{VKE_DEFAULT_CAMERA_VIEWPORT};
 
   float m_near   = VKE_DEFAULT_CAMERA_NEAR_PLANE;
   float m_far    = VKE_DEFAULT_CAMERA_FAR_PLANE;
   float m_fov    = VKE_DEFAULT_CAMERA_FOV;
   float m_aspect = 1.0f;
 
-  nvmath::vec3f m_position{0.0f, 0.0f, 0.0f};
-  nvmath::vec3f m_rotation{0.0f, 0.0f, 0.0f};
+  glm::vec3 m_position{0.0f, 0.0f, 0.0f};
+  glm::vec3 m_rotation{0.0f, 0.0f, 0.0f};
 
   Transform m_transform;
 
-  nvmath::mat4f m_projection;
+  glm::mat4 m_projection;
   bool          m_projection_needs_update = true;
   bool          m_transform_needs_update  = true;
 
   bool m_view_projection_needs_update = true;
 
-  nvmath::mat4f m_look_at_matrix;
+  glm::mat4 m_look_at_matrix;
   bool          m_use_look_at = false;
 
   float m_time = 0.0f;

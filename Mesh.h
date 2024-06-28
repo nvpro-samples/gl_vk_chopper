@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#ifndef __H_MESH_
-#define __H_MESH_
+#pragma once
 
 #include "Transform.h"
-#include "WMath.h"
+#include <glm/glm.hpp>
 #include <map>
-#include <stdio.h>
+#include <stdio.h>\
 
-#pragma once
+template <typename T>
+struct Triangle
+{
+  T m_vertices[3];
+  T m_normals[3];
+};
+
+typedef Triangle<glm::vec3> Triangle3f;
+typedef Triangle<glm::vec4> Triangle4f;
+
 class Mesh
 {
 public:
@@ -41,18 +49,17 @@ public:
   void allocate(uint32_t inMaxVerts, uint32_t inMaxIdx);
   void dispose();
 
-  Vec4f*&    getVertices();
-  Vec4f*&    getNormals();
-  uint32_t*& getIndices();
-  Vec2f*&    getUVs();
+  glm::vec4*& getVertices();
+  glm::vec4*& getNormals();
+  uint32_t*&  getIndices();
+  glm::vec2*& getUVs();
 
 
-  void addVertex(const Vec4f& inVertex);
-  void addVertex(const Vec4f& inVertex, const Vec4f& inNormal);
+  void addVertex(const glm::vec4& inVertex);
+  void addVertex(const glm::vec4& inVertex, const glm::vec4& inNormal);
   void addIndex(const uint32_t& inIndex);
 
   Triangle4f getTriangle(const uint32_t inIndex);
-  Triangle4f getTransformedTriangle(Mat4x4f& inTransform, const uint32_t inIndex);
 
   uint32_t getVertexCount() { return m_vertex_count; }
   uint32_t getIndexCount() { return m_index_count; }
@@ -69,8 +76,6 @@ public:
     m_triangle_count = m_index_count / 3;
   };
 
-  void getTransformedTriangles(Mat4x4f& inTransform, TriangleList4f& outTriangles);
-
   ID      getID() { return m_id; }
   int32_t getMaterialID() { return m_material_id; }
   void    setMaterialID(const int32_t inID) { m_material_id = inID; }
@@ -78,9 +83,9 @@ public:
 private:
   ID m_id;
 
-  Vec4f* m_vertices = nullptr;
-  Vec4f* m_normals  = nullptr;
-  Vec2f* m_uvs      = nullptr;
+  glm::vec4* m_vertices = nullptr;
+  glm::vec4* m_normals  = nullptr;
+  glm::vec2* m_uvs      = nullptr;
 
   uint32_t* m_indices = nullptr;
 
@@ -94,5 +99,3 @@ private:
 
   int32_t m_material_id = 0;
 };
-
-#endif

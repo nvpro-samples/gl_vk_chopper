@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
-
-#ifndef __H_CAMERA_
-#define __H_CAMERA_
 
 #pragma once
 
@@ -35,13 +32,7 @@ public:
 
 
   glm::mat4& getProjection() { return m_projection; }
-  glm::mat4  getViewProjection()
-  {
-    glm::mat4 out(1);
-    out = m_projection * out;
-    out = m_transform(out);
-    return out;
-  }
+  glm::mat4  getViewProjection() { return m_transform(m_projection); }
 
   inline float getFOV() { return m_fov; };
   inline void  setFOV(const float& inFOV)
@@ -71,10 +62,10 @@ public:
 
   void setViewport(const float inMinX, const float inMinY, const float inMaxX, const float inMaxY)
   {
-    m_viewport.m_data[0] = inMinX;
-    m_viewport.m_data[1] = inMinY;
-    m_viewport.m_data[2] = inMaxX;
-    m_viewport.m_data[3] = inMaxY;
+    m_viewport[0] = inMinX;
+    m_viewport[1] = inMinY;
+    m_viewport[2] = inMaxX;
+    m_viewport[3] = inMaxY;
   }
 
 protected:
@@ -84,9 +75,7 @@ protected:
   float m_near;
   float m_far;
 
-  Vec4f m_viewport;
+  glm::vec4 m_viewport;
 
   bool m_projection_dirty;
 };
-
-#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,9 +28,9 @@ layout(location=0) in FS_OUT{
 } vs_in;
 
 struct CameraData{
-	mat4 proj_matrix;
-	mat4 view_matrix;
-	vec4 cameraPosition;
+	mat4 proj_view_matrix;
+	mat4 inverse_proj_view_matrix;
+	vec4 camera_position;
 };
 
 
@@ -107,7 +107,7 @@ float perlin(vec2 inUV){
 		ivec2 uv01 = ivec2(iXY0.x, iXY1.y);
 		ivec2 uv11 = iXY1;
 
-		float timeValue = camera.cameraPosition.w*scl;
+		float timeValue = camera.camera_position.w*scl;
 
 		vec2 v00 = rotV2(texelFetch(lookup, uv00%tsize, 0).xy, timeValue);
 		vec2 v10 = rotV2(texelFetch(lookup, uv10%tsize, 0).xy, timeValue);
@@ -142,7 +142,7 @@ void main(){
 	vec3 light_pos = vec3(-100.0, 100.0, 100.0);
 
 	vec3 light_vector = normalize(light_pos - vs_in.wPos.xyz);
-	vec3 view_pos = camera.cameraPosition.xyz;
+	vec3 view_pos = camera.camera_position.xyz;
 	vec3 view_vector = normalize(view_pos - vs_in.wPos.xyz);
 
 	vec3 pNml = normalize(vs_in.nml.xyz) * vec3(1+(perlin(vs_in.uv*4.0)*0.4));

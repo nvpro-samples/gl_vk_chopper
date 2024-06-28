@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,9 +23,9 @@
 layout(quads) in;
 
 struct CameraData{
-	mat4 proj_matrix;
-	mat4 view_matrix;
-	vec4 cameraPosition;
+	mat4 proj_view_matrix;
+	mat4 inverse_proj_view_matrix;
+	vec4 camera_position;
 };
 
 
@@ -102,7 +102,7 @@ float perlin(vec2 inUV){
 		ivec2 uv01 = ivec2(iXY0.x, iXY1.y);
 		ivec2 uv11 = iXY1;
 
-		float timeValue = camera.cameraPosition.w*scl;
+		float timeValue = camera.camera_position.w*scl;
 
 		vec2 v00 = rotV2(texelFetch(lookup, uv00%tsize, 0).xy, timeValue);
 		vec2 v10 = rotV2(texelFetch(lookup, uv10%tsize, 0).xy, timeValue);
@@ -166,10 +166,8 @@ void main(){
 	float tHeight =  perlin(vuv)*1.25;
 
 	vPos.y += tHeight;
-	tes_out.wPos.xyzw = vPos.xyzw;
-	vPos = camera.proj_matrix * vPos;
-	vPos.y = -vPos.y;
-	vPos.z = (vPos.z + vPos.w) / 2.0;
+	tes_out.wPos = vPos;
+	vPos = camera.proj_view_matrix * vPos;
 
 
 	tes_out.pos = vPos;

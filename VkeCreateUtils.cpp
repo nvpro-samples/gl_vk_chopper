@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -918,7 +918,7 @@ void imageViewCreateInfo(VkImageViewCreateInfo* outInfo,
                          VkImageViewType        inType,
                          VkFormat               inFormat,
                          VkImageAspectFlags     inAspect,
-                         uint32_t               inArraySizse,
+                         uint32_t               inArraySize,
                          uint32_t               inBaseArraySlice,
                          VkComponentSwizzle     inR,
                          VkComponentSwizzle     inG,
@@ -936,9 +936,9 @@ void imageViewCreateInfo(VkImageViewCreateInfo* outInfo,
   outInfo->components.b                    = inB;
   outInfo->components.a                    = inA;
   outInfo->subresourceRange.aspectMask     = inAspect;
-  outInfo->subresourceRange.layerCount     = inArraySizse;
+  outInfo->subresourceRange.layerCount     = inArraySize;
   outInfo->subresourceRange.baseArrayLayer = inBaseArraySlice;
-  outInfo->subresourceRange.levelCount     = 1;
+  outInfo->subresourceRange.levelCount     = VK_REMAINING_MIP_LEVELS;
   outInfo->subresourceRange.baseMipLevel   = 0;
   outInfo->flags                           = 0;
 }
@@ -948,7 +948,7 @@ void imageViewCreate(VkImageView*       outView,
                      VkImageViewType    inType,
                      VkFormat           inFormat,
                      VkImageAspectFlags inAspect,
-                     uint32_t           inArraySizse,
+                     uint32_t           inArraySize,
                      uint32_t           inBaseArraySlice,
                      VkComponentSwizzle inR,
                      VkComponentSwizzle inG,
@@ -958,7 +958,7 @@ void imageViewCreate(VkImageView*       outView,
 
   VkImageViewCreateInfo imageInfo;
 
-  imageViewCreateInfo(&imageInfo, inImage, inType, inFormat, inAspect, inArraySizse, inBaseArraySlice, inR, inG, inB, inA);
+  imageViewCreateInfo(&imageInfo, inImage, inType, inFormat, inAspect, inArraySize, inBaseArraySlice, inR, inG, inB, inA);
 
 
   VKA_CHECK_ERROR(vkCreateImageView(getDefaultDevice(), &imageInfo, NULL, outView), "Could not create image view for texture.\n");
@@ -976,7 +976,7 @@ void samplerCreateInfo(VkSamplerCreateInfo* outInfo,
                        float                inMinLod,
                        float                inMaxLod,
                        float                inMipLodBias,
-                       float                inMaxAnsisotropy,
+                       float                inMaxAnisotropy,
                        VkBorderColor        inBorderColor)
 {
 
@@ -989,7 +989,7 @@ void samplerCreateInfo(VkSamplerCreateInfo* outInfo,
   outInfo->addressModeU            = inAddressU;
   outInfo->addressModeV            = inAddressV;
   outInfo->addressModeW            = inAddressW;
-  outInfo->maxAnisotropy           = inMaxAnsisotropy;
+  outInfo->maxAnisotropy           = inMaxAnisotropy;
   outInfo->maxLod                  = inMaxLod;
   outInfo->minLod                  = inMinLod;
   outInfo->mipLodBias              = inMipLodBias;
@@ -1011,13 +1011,13 @@ void samplerCreate(VkSampler*           outSampler,
                    float                inMinLod,
                    float                inMaxLod,
                    float                inMipLodBias,
-                   float                inMaxAnsisotropy,
+                   float                inMaxAnisotropy,
                    VkBorderColor        inBorderColor)
 {
 
   VkSamplerCreateInfo samplerInfo;
   samplerCreateInfo(&samplerInfo, inMagFilter, inMinFilter, inCompareEnable, inCompareOp, inAddressU, inAddressV,
-                    inAddressW, inMipMode, inMinLod, inMaxLod, inMipLodBias, inMaxAnsisotropy, inBorderColor);
+                    inAddressW, inMipMode, inMinLod, inMaxLod, inMipLodBias, inMaxAnisotropy, inBorderColor);
 
   VKA_CHECK_ERROR(vkCreateSampler(getDefaultDevice(), &samplerInfo, NULL, outSampler), "Could not create sampler for image texture.\n");
 }

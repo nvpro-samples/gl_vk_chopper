@@ -19,9 +19,7 @@
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#ifndef __H_VKE_RENDERER_
-#define __H_VKE_RENDERER_
-
+#pragma once
 
 #include "VkeMesh.h"
 #include "VkeNodeData.h"
@@ -29,7 +27,6 @@
 #include <nvvk/shadermodulemanager_vk.hpp>
 #include <vulkan/vulkan.h>
 
-#pragma once
 class VkeRenderer
 {
 public:
@@ -93,6 +90,3 @@ protected:
   uint32_t m_width  = 1024;
   uint32_t m_height = 768;
 };
-
-
-#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
-
-#ifndef __H_VKE_CAMERA_
-#define __H_VKE_CAMERA_
 
 #pragma once
 
@@ -46,12 +43,12 @@
 #define VKE_DEFAULT_CAMERA_FOV 45.0f
 #endif
 
-typedef struct _VkeCameraUniform
+struct VkeCameraUniform
 {
-  glm::mat4 view_proj_matrix;
-  glm::mat4 view_matrix;
-  glm::vec4 camera_position;
-} VkeCameraUniform;
+  glm::mat4 proj_view_matrix;          // proj * view
+  glm::mat4 inverse_proj_view_matrix;  // inverse(proj * view)
+  glm::vec4 camera_position;           // .xyz = camera position, .w = time
+};
 
 class VkeCamera : public VkeBuffer<VkeCameraUniform>
 {
@@ -86,7 +83,7 @@ public:
 
   void initCameraData();
   void updateCameraCmd(VkCommandBuffer inCommand);
-  void update();
+  void update(float time);
 
   void bind(VkCommandBuffer* inBuffer);
 
@@ -113,7 +110,7 @@ public:
 private:
   void updateProjection();
   void updateTransform();
-  void updateViewProjection();
+  void updateViewProjection(float time);
 
   ID m_id = 0;
 
@@ -130,15 +127,11 @@ private:
   Transform m_transform;
 
   glm::mat4 m_projection;
-  bool          m_projection_needs_update = true;
-  bool          m_transform_needs_update  = true;
+  bool      m_projection_needs_update = true;
+  bool      m_transform_needs_update  = true;
 
   bool m_view_projection_needs_update = true;
 
   glm::mat4 m_look_at_matrix;
-  bool          m_use_look_at = false;
-
-  float m_time = 0.0f;
+  bool      m_use_look_at = false;
 };
-
-#endif

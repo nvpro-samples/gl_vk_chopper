@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
-
-#ifndef __H_VKE_GAME_RENDERER_DYNAMIC_
-#define __H_VKE_GAME_RENDERER_DYNAMIC_
 
 #pragma once
 
@@ -30,11 +27,7 @@
 #include "VkeScreenQuad.h"
 #include "VkeTerrainQuad.h"
 
-#include <condition_variable>
-#include <memory>
-#include <mutex>
 #include <stdint.h>
-#include <thread>
 
 class VkeCamera;
 
@@ -47,7 +40,7 @@ struct FlightPath
   glm::vec2 m_end_position;
   glm::vec2 m_position;
   glm::vec2 m_direction;
-  glm::vec2 m_range;
+  glm::vec2 m_range{};
   float     m_t;
 
   float m_velocity;
@@ -58,13 +51,13 @@ struct FlightPath
       , m_end_position(0.0, 0.0)
       , m_position(0.0, 0.0)
       , m_direction(0.0, 1.0)
-      , m_velocity(0.01f)
+      , m_velocity(0.06f)
       , m_altitude(10.0f)
       , m_t(0.0f)
   {
   }
 
-  FlightPath(glm::vec2& initialPosition, glm::vec2& endPosition, float startT = 0.0, float inAltitude = 10, float inVelocity = 0.001)
+  FlightPath(glm::vec2& initialPosition, glm::vec2& endPosition, float startT = 0.0, float inAltitude = 10, float inVelocity = 0.06)
       : m_start_position(initialPosition)
       , m_end_position(endPosition)
       , m_position(0.0, 0.0)
@@ -72,32 +65,28 @@ struct FlightPath
       , m_altitude(inAltitude)
   {
 
-    m_t     = startT;
-    m_range = m_end_position - m_start_position;
+    m_t         = startT;
+    m_range     = m_end_position - m_start_position;
+    m_direction = glm::normalize(m_range);
   }
 
   ~FlightPath() {}
 
-  void update(glm::mat4* inMat, float inT)
+  void update(glm::mat4* inMat, float deltaTime)
   {
+    m_t = fmodf(m_t + m_velocity * deltaTime, 1.f);
 
-    m_t += (m_velocity);
-    if(m_t >= 1.0)
-      m_t = 0.0;
-
-    m_position  = (m_range * m_t) + m_start_position;
-    m_direction = glm::normalize(m_range);
+    m_position = (m_range * m_t) + m_start_position;
 
     float yRot = atan2(m_range.x, m_range.y);
 
-    glm::mat4 rotMat(1);
-    rotMat = glm::translate(rotMat, glm::vec3(m_position.x, m_altitude, m_position.y));
+    glm::mat4 translation(1);
+    translation = glm::translate(translation, glm::vec3(m_position.x, m_altitude, m_position.y));
 
-
-    *inMat = glm::mat4(1);
-    *inMat = glm::rotate(*inMat, yRot, glm::vec3(0.0, 1.0, 0.0));
-    *inMat = glm::rotate(*inMat, glm::radians(-90.f), glm::vec3(1.0, 0.0, 0.0));
-    *inMat = rotMat * (*inMat);
+    glm::mat4 rotation(1);
+    rotation = glm::rotate(rotation, yRot, glm::vec3(0.0, 1.0, 0.0));
+    rotation = glm::rotate(rotation, glm::radians(-90.f), glm::vec3(1.0, 0.0, 0.0));
+    *inMat   = translation * rotation;
   }
 };
 
@@ -278,5 +267,3 @@ protected:
 
   virtual void initDescriptorPool();
 };
-
-#endif

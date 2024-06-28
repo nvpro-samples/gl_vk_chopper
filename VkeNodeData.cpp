@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -108,19 +108,18 @@ void VkeNodeData::bind(VkCommandBuffer* inCmd) {}
 void VkeNodeData::updateVKBufferData(VkeNodeUniform* inData)
 {
   uint8_t* ptr = (uint8_t*)inData + (sizeof(VkeNodeUniform) * m_index);
-  memcpy(ptr, (void*)&m_backing_store->view_matrix, sizeof(VkeNodeUniform));
+  memcpy(ptr, (void*)m_backing_store, sizeof(VkeNodeUniform));
 }
 
 void VkeNodeData::updateFromNode(Node* const inNode, VkCommandBuffer* inBuffer)
 {
-
   m_node = inNode;
 
   inNode->update();
   Transform transform = inNode->GetTransform();
 
-  m_backing_store->view_matrix   = transform.getTransform();
-  m_backing_store->normal_matrix = transform.getInverse();
+  m_backing_store->node_matrix         = transform.getTransform();
+  m_backing_store->inverse_node_matrix = transform.getInverse();
 }
 
 void VkeNodeData::updateFromNode(Node* const inNode, VkeNodeUniform* inData, uint32_t inInstanceCount)
@@ -131,10 +130,10 @@ void VkeNodeData::updateFromNode(Node* const inNode, VkeNodeUniform* inData, uin
   inNode->update();
   Transform transform = inNode->GetTransform();
 
-  m_backing_store->view_matrix   = transform.getTransform();
-  m_backing_store->normal_matrix = transform.getInverse();
-  m_backing_store->lookup.x      = m_mesh->getMaterialID();
-  m_backing_store->lookup.y      = inInstanceCount;
+  m_backing_store->node_matrix         = transform.getTransform();
+  m_backing_store->inverse_node_matrix = transform.getInverse();
+  m_backing_store->lookup.x            = m_mesh->getMaterialID();
+  m_backing_store->lookup.y            = inInstanceCount;
 
   updateVKBufferData(inData);
 }

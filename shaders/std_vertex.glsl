@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 
 #version 440 core
 
-struct SceneData{
-	mat4 view_matrix;
-	mat4 nml_matrix;
+struct NodeUniform{
+	mat4 node_matrix;
+	mat4 inverse_node_matrix;
 	ivec4 lut;
 	vec4 lutPad[3];
 };
@@ -32,15 +32,15 @@ struct InstanceData{
 };
 
 struct CameraData{
-	mat4 proj_matrix;
-	mat4 view_matrix;
-	vec4 cameraPosition;
+	mat4 proj_view_matrix;
+	mat4 inverse_proj_view_matrix;
+	vec4 camera_position;
 };
 
-layout(std140, set=0, binding = 2) uniform sceneBuffer{
-	//Scene data for each draw.
-	SceneData scene[32];
-}scn;
+layout(std140, set=0, binding = 2) uniform nodeUniformBuffer{
+	// Node uniform data for each draw.
+	NodeUniform nodes[32];
+};
 
 layout(std140,set=0, binding = 1) uniform cameraBuffer{
 	CameraData camera;
@@ -54,30 +54,31 @@ in layout(location = 0) vec4 pos;
 in layout(location = 1) vec4 nml;
 
 layout(location=0) out VS_OUT{
-	vec4 pos;
-	vec4 wpos;
-	vec4 nml;
+	vec3 wpos;
+	vec3 nml;
 	vec2 uv;
 	flat ivec4 lut;
 } vs_out;
 
 void main(){
-	vs_out.uv = vec2(pos.w,nml.w);
+	// Flip UVs vertically:
+	vs_out.uv = vec2(pos.w, 1.0f - nml.w);
 
-	int instCount = scn.scene[0].lut.y;
+	int instCount = nodes[0].lut.y;
 	int bufferIndex = gl_InstanceIndex / instCount;
 	int instanceIndex = gl_InstanceIndex % instCount;
+	mat4 flightMat = tra.instdata[instanceIndex].flight_matrix;
 
+	// nml.xyz * mat3(...inverse_node_matrix) multiplies the normal by the
+	// inverse transpose of the node matrix, which is the correct matrix to use
+	// for normals.
+	// We can use the flight matrix as-is, because we know it's only composed
+	// of a translation and a rotation -- so its inverse transpose
+	// is proportional to the matrix itself.
+	vs_out.nml = mat3(flightMat) * (mat3(nodes[bufferIndex].inverse_node_matrix) * nml.xyz);
 
-	vs_out.nml = vec4((mat3(tra.instdata[instanceIndex%4].flight_matrix) * mat3(scn.scene[bufferIndex].nml_matrix)) * nml.xyz, 1.0);
+	vs_out.wpos = (flightMat * (nodes[bufferIndex].node_matrix * vec4(pos.xyz, 1.0))).xyz;
+	vs_out.lut = nodes[bufferIndex].lut;
 
-	mat4 iMat = scn.scene[bufferIndex].view_matrix ;
-
-	vs_out.wpos = (tra.instdata[instanceIndex].flight_matrix * (iMat * vec4(pos.xyz, 1.0)));
-	vs_out.pos = camera.proj_matrix * vs_out.wpos;
-	vs_out.pos.y = -vs_out.pos.y;
-	vs_out.pos.z = (vs_out.pos.z + vs_out.pos.w) / 2.0;
-	vs_out.lut = scn.scene[bufferIndex].lut;
-
-	gl_Position = vs_out.pos;
+	gl_Position = camera.proj_view_matrix * vec4(vs_out.wpos, 1.0f);
 }

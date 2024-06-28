@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,6 @@
 
 
 VkeScreenQuad::VkeScreenQuad()
-    : VkeBuffer()
 {
 }
 
@@ -32,18 +31,16 @@ VkeScreenQuad::~VkeScreenQuad() {}
 
 void VkeScreenQuad::initQuadData()
 {
-  m_usage_flags  = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-  m_memory_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-  initBackingStore(sizeof(QuadUniform));
+  // Each of these is a VertexObjectUV.
+  // The vertices here cover the screen exactly.
+  // Note that it's more efficient to draw a single triangle that covers
+  // the entire screen, thanks to reduced overdraw around the diagonal.
+  float quadVerts[] = {-1.0, -1.0, 0.0, 1.0, 0.0, 0.0,  //
+                       1.0,  -1.0, 0.0, 1.0, 1.0, 0.0,  //
+                       1.0,  1.0,  0.0, 1.0, 1.0, 1.0,  //
+                       -1.0, 1.0,  0.0, 1.0, 0.0, 1.0};
 
-  m_backing_store->view_matrix = glm::mat4(1);
-
-  initVKBufferData();
-
-  float quadVerts[] = {-1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0,  -1.0, 0.0, 1.0, 1.0, 0.0,
-                       1.0,  1.0,  0.0, 1.0, 1.0, 1.0, -1.0, 1.0,  0.0, 1.0, 0.0, 1.0};
-
-  uint32_t quadIdxs[] = {0, 1, 2, 0, 2, 3};
+  uint32_t quadIdxs[] = {0, 2, 1, 0, 3, 2};
 
   size_t dataSize = 4 * sizeof(VertexObjectUV);
 

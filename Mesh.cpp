@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,18 +37,18 @@ void Mesh::allocate(uint32_t inMaxVerts, uint32_t inMaxIdx)
   dispose();
   m_max_vertices = inMaxVerts;
   m_max_indices  = inMaxIdx;
-  m_vertices     = new Vec4f[m_max_vertices];
-  m_normals      = new Vec4f[m_max_vertices];
+  m_vertices     = new glm::vec4[m_max_vertices];
+  m_normals      = new glm::vec4[m_max_vertices];
   m_indices      = new uint32_t[m_max_indices];
-  m_uvs          = new Vec2f[m_max_vertices];
+  m_uvs          = new glm::vec2[m_max_vertices];
 }
 
-Vec4f*& Mesh::getVertices()
+glm::vec4*& Mesh::getVertices()
 {
   return m_vertices;
 }
 
-Vec4f*& Mesh::getNormals()
+glm::vec4*& Mesh::getNormals()
 {
   return m_normals;
 }
@@ -58,18 +58,18 @@ uint32_t*& Mesh::getIndices()
   return m_indices;
 }
 
-Vec2f*& Mesh::getUVs()
+glm::vec2*& Mesh::getUVs()
 {
   return m_uvs;
 }
 
-void Mesh::addVertex(const Vec4f& inVertex)
+void Mesh::addVertex(const glm::vec4& inVertex)
 {
-  Vec4f normal = {0.0, 0.0, 0.0, 1.0};
+  glm::vec4 normal = {0.0, 0.0, 0.0, 1.0};
   addVertex(inVertex, normal);
 }
 
-void Mesh::addVertex(const Vec4f& inVertex, const Vec4f& inNormal)
+void Mesh::addVertex(const glm::vec4& inVertex, const glm::vec4& inNormal)
 {
   if(m_vertex_count >= m_max_vertices)
     return;
@@ -91,18 +91,6 @@ Triangle4f Mesh::getTriangle(const uint32_t inIndex)
   Triangle4f out        = {
       {m_vertices[m_indices[startIndex]], m_vertices[m_indices[startIndex + 1]], m_vertices[m_indices[startIndex + 2]]},
       {m_normals[m_indices[startIndex]], m_normals[m_indices[startIndex + 1]], m_normals[m_indices[startIndex + 2]]}};
-  return out;
-}
-
-Triangle4f Mesh::getTransformedTriangle(Mat4x4f& inTransform, const uint32_t inIndex)
-{
-  uint32_t startIndex = inIndex * 3;
-
-  Triangle4f out = {{inTransform(m_vertices[m_indices[startIndex]]), inTransform(m_vertices[m_indices[startIndex + 1]]),
-                     inTransform(m_vertices[m_indices[startIndex + 2]])},
-                    {inTransform(m_normals[m_indices[startIndex]]), inTransform(m_normals[m_indices[startIndex + 1]]),
-                     inTransform(m_normals[m_indices[startIndex + 2]])}};
-
   return out;
 }
 
@@ -132,16 +120,6 @@ void Mesh::dispose()
   m_index_count    = 0;
   m_vertex_count   = 0;
   m_triangle_count = 0;
-}
-
-void Mesh::getTransformedTriangles(Mat4x4f& inTransform, TriangleList4f& outTriangles)
-{
-
-  for(uint32_t i = 0; i < m_triangle_count; ++i)
-  {
-    Triangle4f tri = getTransformedTriangle(inTransform, i);
-    outTriangles.push_back(tri);
-  }
 }
 
 

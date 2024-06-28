@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,17 +21,6 @@
 #version 450 core
 
 layout(vertices = 4) out;
-
-struct CameraData{
-	mat4 proj_matrix;
-	mat4 view_matrix;
-	vec4 cameraPosition;
-};
-
-layout(std140, binding = 1) uniform cameraBuffer{
-	CameraData camera;
-};
-
 
 layout(location=0) in VS_OUT{
 	vec4 pos;

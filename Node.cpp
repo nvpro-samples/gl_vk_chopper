@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -128,7 +128,7 @@ Node* Node::newChild(const ID& inID)
   return node;
 }
 
-Node* Node::newChild(const Vec4f& inPosition)
+Node* Node::newChild(const glm::vec4& inPosition)
 {
   ID    id   = m_child_nodes.nextID();
   Node* node = new Node(this, id);
@@ -138,7 +138,7 @@ Node* Node::newChild(const Vec4f& inPosition)
 
 Node* Node::newChild(const float inX, const float inY, const float inZ)
 {
-  Vec4f position = {inX, inY, inZ, 1.0};
+  glm::vec4 position = {inX, inY, inZ, 1.0};
   return newChild(position);
 }
 

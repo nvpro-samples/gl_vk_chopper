@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -68,10 +68,10 @@ Mesh* RenderContext::newMesh(const Mesh::ID& inID, const meshimport::MeshDataf& 
 
   mesh->allocate(inData.vertex_count, inData.index_count);
 
-  Vec4f*    nmls = mesh->getNormals();
-  Vec4f*    vtxs = mesh->getVertices();
-  uint32_t* idxs = mesh->getIndices();
-  Vec2f*    uvs  = mesh->getUVs();
+  glm::vec4* nmls = mesh->getNormals();
+  glm::vec4* vtxs = mesh->getVertices();
+  uint32_t*  idxs = mesh->getIndices();
+  glm::vec2* uvs  = mesh->getUVs();
 
   mesh->setMaterialID(inData.materialID);
 
@@ -108,16 +108,6 @@ void RenderContext::deleteMesh(const Mesh::ID& inID)
     delete mesh;
     mesh = NULL;
   }
-}
-
-
-void RenderContext::getRenderTriangles(const Scene::ID& inID, render::TriangleList& outTriangles)
-{
-  Scene* scene = getScene(inID);
-  if(!scene)
-    return;
-
-  scene->getTriangles(outTriangles);
 }
 
 RenderContext::~RenderContext() {}

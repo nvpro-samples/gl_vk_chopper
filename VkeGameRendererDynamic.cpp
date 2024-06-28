@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,6 +29,7 @@
 #include "VkeVBO.h"
 #include "VulkanAppContext.h"
 #include <algorithm>
+#include <chrono>
 #ifndef INIT_COMMAND_ID
 #define INIT_COMMAND_ID 1
 #endif
@@ -518,24 +519,28 @@ void vkeGameRendererDynamic::update()
   VulkanDC*         dc     = VulkanDC::Get();
   VulkanDC::Device* device = dc->getDefaultDevice();
 
-  static float sTime = 0.0f;
+  static float totalTime = 0.0f;
+  static auto lastFrameStart = std::chrono::high_resolution_clock::now();
+  auto thisFrameStart = std::chrono::high_resolution_clock::now();
+
+  float deltaTime = std::chrono::duration<float>(thisFrameStart - lastFrameStart).count();
+  totalTime += deltaTime;
+  lastFrameStart = thisFrameStart;
 
   size_t cnt = m_node_data->count();
-
-  glm::mat4 tempMatrix;
 
 
   for(size_t i = 0; i < m_instance_count; ++i)
   {
-    size_t         pointerOffset = (sizeof(VkeNodeUniform) * cnt) + (64 * i);
+    size_t     pointerOffset = (sizeof(VkeNodeUniform) * cnt) + (64 * i);
     glm::mat4* matPtr        = (glm::mat4*)(((uint8_t*)m_uniforms_local) + pointerOffset);
-    m_flight_paths[i]->update(matPtr, sTime);
+    m_flight_paths[i]->update(matPtr, deltaTime);
   }
 
   m_node_data->update((VkeNodeUniform*)m_uniforms_local, m_instance_count);
 
   m_camera->setViewport(0, 0, (float)m_width, (float)m_height);
-  m_camera->update();
+  m_camera->update(totalTime);
 
   generateDrawCommands();
 
@@ -573,8 +578,6 @@ void vkeGameRendererDynamic::update()
 
   m_current_buffer_index++;
   m_current_buffer_index %= 2;
-
-  sTime += 0.16f;
 }
 
 
@@ -656,15 +659,12 @@ void vkeGameRendererDynamic::initDescriptorLayout()
 	Skybox descriptor and pipeline layout.
 	----------------------------------------------------------*/
 
-
-  layoutBinding(&quadBinding[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
-  layoutBinding(&quadBinding[1], 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-  layoutBinding(&quadBinding[2], 2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
+  layoutBinding(&quadBinding[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+  layoutBinding(&quadBinding[1], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1);
 
 
   //descriptor layout describing the bindings.
-  descriptorSetLayoutCreate(&m_quad_descriptor_set_layout, 3, quadBinding);
+  descriptorSetLayoutCreate(&m_quad_descriptor_set_layout, 2, quadBinding);
 
   //create the pipeline layout
   pipelineLayoutCreate(&m_quad_pipeline_layout, 1, &m_quad_descriptor_set_layout);
@@ -870,17 +870,14 @@ void vkeGameRendererDynamic::initDescriptorSets()
 
   /*
 	Skybox layout bindings (set 0)
-	Binding 0:		Skybox Uniforms
-	Binding 1:		Skybox Textures
-	Binding 2:		Camera uniforms
+	Binding 0:		Skybox Textures
+	Binding 1:		Camera uniforms
 	*/
 
-  descriptorSetWrite(&writes[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &m_screen_quad.getData().descriptor,
-                     VK_NULL_HANDLE, 0, m_quad_descriptor_set);
-  descriptorSetWrite(&writes[1], 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_NULL_HANDLE, &cubeTexture, 0, m_quad_descriptor_set);
-  descriptorSetWrite(&writes[2], 2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &camInfo, VK_NULL_HANDLE, 0, m_quad_descriptor_set);
+  descriptorSetWrite(&writes[0], 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_NULL_HANDLE, &cubeTexture, 0, m_quad_descriptor_set);
+  descriptorSetWrite(&writes[1], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &camInfo, VK_NULL_HANDLE, 0, m_quad_descriptor_set);
 
-  vkUpdateDescriptorSets(device->getVKDevice(), 3, writes, 0, NULL);
+  vkUpdateDescriptorSets(device->getVKDevice(), 2, writes, 0, NULL);
 
 
   /*
@@ -909,11 +906,6 @@ void vkeGameRendererDynamic::initDescriptorSets()
   {
     m_draw_calls[i]->initDescriptor();
   }
-
-  //m_test_drawcall->initDrawCommands(m_node_data->count());
-
-  //this needs to happen in the thread.
-  //m_draw_calls[0]->initDrawCommands(m_node_data->count());
 }
 
 
@@ -1280,7 +1272,7 @@ void vkeGameRendererDynamic::initTerrainCommand()
                               &m_terrain_descriptor_set, 0, NULL);
 
       m_terrain_quad.bind(&m_terrain_command[i]);
-      m_terrain_quad.draw(&m_terrain_command[i]); /**/
+      m_terrain_quad.draw(&m_terrain_command[i]);
 
       vkEndCommandBuffer(m_terrain_command[i]);
     }
@@ -1293,10 +1285,10 @@ void vkeGameRendererDynamic::initCamera()
 
   m_camera = new VkeCamera(1, -20.0, -1.0, -8.0);
   m_camera->lookAt(zp);
-  m_camera->update();
+  m_camera->update(0.f);
   m_light = new VkeCamera(2, -6, -6, -10);
   m_light->lookAt(zp);
-  m_light->update();
+  m_light->update(0.f);
 }
 
 void vkeGameRendererDynamic::initDrawCalls()

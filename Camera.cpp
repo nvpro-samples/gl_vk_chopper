@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -48,8 +48,8 @@ void Camera::initProjection(const float& inFOV, const float& inNear, const float
   m_near = inNear;
   m_far  = inFar;
 
-  m_viewport.m_data[2] = 800.0f;
-  m_viewport.m_data[3] = 800.0f;
+  m_viewport[2] = 800.0f;
+  m_viewport[3] = 800.0f;
 
   m_projection_dirty = true;
 }
@@ -61,8 +61,8 @@ void Camera::updateProjection()
     return;
 
 
-  float vw = m_viewport.m_data[2] - m_viewport.m_data[0];
-  float vh = m_viewport.m_data[3] - m_viewport.m_data[1];
+  float vw = m_viewport[2] - m_viewport[0];
+  float vh = m_viewport[3] - m_viewport[1];
 
   float aspect = vw / vh;
 

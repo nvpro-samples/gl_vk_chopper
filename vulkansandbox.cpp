@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
-
-#define DEBUG_FILTER 1
 
 #include <include_gl.h>
 
@@ -30,11 +28,6 @@
 #include <nvgl/appwindowprofiler_gl.hpp>
 #include <nvgl/base_gl.hpp>
 #include <nvgl/error_gl.hpp>
-
-
-#include <iostream>
-#include <stdint.h>
-
 
 #include "VulkanAppContext.h"
 #include "VulkanDeviceContext.h"
@@ -60,32 +53,6 @@ class Sample;
 class Sample : public nvgl::AppWindowProfilerGL
 {
   CameraControl m_control;
-
-
-  void end()
-  {
-    // TwTerminate();
-  }
-
-  bool mouse_pos(int x, int y)
-  {
-    return false;  // !!TwEventMousePosGLFW(x, y);
-  }
-
-  bool mouse_button(int button, int action)
-  {
-    return false;  // !!TwEventMouseButtonGLFW(button, action);
-  }
-
-  bool mouse_wheel(int wheel)
-  {
-    return false;  // !!TwEventMouseWheelGLFW(wheel);
-  }
-
-  bool key_button(int button, int action, int mods)
-  {
-    return false;  // handleTwKeyPressed(button, action, mods);
-  }
 
   struct Tweak
   {
@@ -143,9 +110,6 @@ bool Sample::initProgram()
 
 bool Sample::initVulkan()
 {
-
-  bool vulkanReady = true;  // vulkanInitLibrary();
-
   /*
   	Get and initialise the VulkanAppContext.
 	 */
@@ -162,7 +126,7 @@ bool Sample::initVulkan()
 	 */
   ctxt->initRenderer();
 
-  return vulkanReady;
+  return true;
 }
 
 bool Sample::initMisc()
@@ -179,7 +143,6 @@ bool Sample::initScene()
 
 bool Sample::initFramebuffers(int width, int height, int samples)
 {
-
   if(samples > 1)
   {
     newTexture(textures.scene_color, GL_TEXTURE_2D_MULTISAMPLE);
@@ -208,7 +171,6 @@ bool Sample::initFramebuffers(int width, int height, int samples)
   newFramebuffer(fbos.scene);
   glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textures.scene_color, 0);
-  // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, textures.scene_depthstencil, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return true;
@@ -217,12 +179,6 @@ bool Sample::initFramebuffers(int width, int height, int samples)
 
 bool Sample::begin()
 {
-
-
-  // TwInit(TW_OPENGL_CORE,NULL);
-  // TwWindowSize(m_windowState.m_swapSize[0], m_windowState.m_swapSize[1]);
-
-  //  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glDisable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
 
@@ -236,10 +192,10 @@ bool Sample::begin()
 
   m_control.m_sceneOrbit     = vec3(0.0f);
   m_control.m_sceneDimension = float(1.0);
-  glm::vec3 scenePos     = glm::vec3(20.0, -1.0, 8.0);
+  glm::vec3 scenePos         = glm::vec3(20.0, -1.0, 8.0);
 
   m_control.m_viewMatrix = glm::lookAt(m_control.m_sceneOrbit - (scenePos * m_control.m_sceneDimension * 0.5f),
-                                           m_control.m_sceneOrbit, vec3(0, 1, 0));
+                                       m_control.m_sceneOrbit, vec3(0, 1, 0));
 
 
   return validated;

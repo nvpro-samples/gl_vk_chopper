@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#ifndef __H_VKE_CREATE_UTILS_
-#define __H_VKE_CREATE_UTILS_
-
+#pragma once
 
 #include "VulkanDeviceContext.h"
 #include "vkaUtils.h"
 #include <vulkan/vulkan.h>
-#pragma once
-
 
 VkDevice getDefaultDevice();
 
@@ -103,7 +99,7 @@ void imageCreateAndBind(VkImage*              outImage,
                         uint32_t              inWidth,
                         uint32_t              inHeight,
                         uint32_t              inDepth     = 1,
-                        uint32_t              inArrayize  = 1,
+                        uint32_t              inArraySize = 1,
                         VkFlags               inMemFlags  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                         VkImageUsageFlags     inUsage     = VK_IMAGE_USAGE_SAMPLED_BIT,
                         VkImageTiling         inTiling    = VK_IMAGE_TILING_LINEAR,
@@ -319,7 +315,7 @@ void imageViewCreateInfo(VkImageViewCreateInfo* outInfo,
                          VkImageViewType        inType           = VK_IMAGE_VIEW_TYPE_2D,
                          VkFormat               inFormat         = VK_FORMAT_R8G8B8A8_UNORM,
                          VkImageAspectFlagBits  inAspect         = VK_IMAGE_ASPECT_COLOR_BIT,
-                         uint32_t               inArraySizse     = 1,
+                         uint32_t               inArraySize     = 1,
                          uint32_t               inBaseArraySlice = 0,
                          VkComponentSwizzle     inR              = VK_COMPONENT_SWIZZLE_R,
                          VkComponentSwizzle     inG              = VK_COMPONENT_SWIZZLE_G,
@@ -331,7 +327,7 @@ void imageViewCreate(VkImageView*       outView,
                      VkImageViewType    inType           = VK_IMAGE_VIEW_TYPE_2D,
                      VkFormat           inFormat         = VK_FORMAT_R8G8B8A8_UNORM,
                      VkImageAspectFlags inAspect         = VK_IMAGE_ASPECT_COLOR_BIT,
-                     uint32_t           inArraySizse     = 1,
+                     uint32_t           inArraySize     = 1,
                      uint32_t           inBaseArraySlice = 0,
                      VkComponentSwizzle inR              = VK_COMPONENT_SWIZZLE_R,
                      VkComponentSwizzle inG              = VK_COMPONENT_SWIZZLE_G,
@@ -387,6 +383,3 @@ void deviceCreate(VkDevice*                 outDevice,
                   uint32_t                  inLayerCount = 0,
                   const char* const*        inLayerNames = NULL,
                   VkPhysicalDeviceFeatures* inFeatures   = NULL);
-
-
-#endif

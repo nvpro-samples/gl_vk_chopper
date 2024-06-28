@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -64,7 +64,10 @@ void VkeCamera::updateProjection()
     return;
   m_aspect = m_viewport.z / m_viewport.w;
 
+  // Our scene used a left-handed, Y-up coordinate system, and our
+  // depth buffer uses bounds of [0, 1]:
   m_projection = glm::perspectiveRH_ZO(m_fov, m_aspect, m_near, m_far);
+  m_projection[1][1] *= -1.f;
 
   m_projection_needs_update      = false;
   m_view_projection_needs_update = true;
@@ -79,7 +82,6 @@ void VkeCamera::updateTransform()
 
   if(!m_use_look_at)
   {
-
     glm::vec4 tra = glm::vec4(m_position, 1.0);
     glm::vec3 fwd(0.0, 0.0, 1.0);
     glm::vec3 up(0.0, 0.0, 0.0);
@@ -100,22 +102,15 @@ void VkeCamera::updateTransform()
   m_view_projection_needs_update = true;
 }
 
-void VkeCamera::updateViewProjection()
+void VkeCamera::updateViewProjection(float time)
 {
   if(!m_view_projection_needs_update && !m_use_look_at)
     return;
 
-  m_backing_store->view_proj_matrix = m_projection;
-  m_backing_store->view_proj_matrix *= m_transform.getTransform();
-  m_backing_store->view_matrix = glm::inverse(m_transform.getTransform());
+  m_backing_store->proj_view_matrix         = m_projection * m_transform.getTransform();
+  m_backing_store->inverse_proj_view_matrix = glm::inverse(m_backing_store->proj_view_matrix);
 
-  m_backing_store->view_matrix[0][3] = 0.0;
-  m_backing_store->view_matrix[1][3] = 0.0;
-  m_backing_store->view_matrix[2][3] = 0.0;
-
-  m_time += 0.01f;
-
-  m_backing_store->camera_position = glm::vec4(m_position, m_time);
+  m_backing_store->camera_position = glm::vec4(m_position, time);
 
   m_view_projection_needs_update = false;
 }
@@ -126,11 +121,11 @@ void VkeCamera::updateCameraCmd(VkCommandBuffer inCommand)
   vkCmdUpdateBuffer(inCommand, m_data.buffer, 0, sizeof(VkeCameraUniform), (const uint32_t*)&(m_backing_store[0]));
 }
 
-void VkeCamera::update()
+void VkeCamera::update(float time)
 {
   updateTransform();
   updateProjection();
-  updateViewProjection();
+  updateViewProjection(time);
 }
 
 void VkeCamera::bind(VkCommandBuffer* inBuffer) {}
@@ -219,8 +214,7 @@ glm::vec4 VkeCamera::worldPosition(glm::vec4& inPosition)
 
 void VkeCamera::lookAt(glm::vec4& inPos)
 {
-  m_use_look_at = true;
-  glm::mat4 camView;
+  m_use_look_at    = true;
   m_look_at_matrix = glm::mat4(1);
 
 
@@ -231,11 +225,11 @@ void VkeCamera::lookAt(glm::vec4& inPos)
 
 void VkeCamera::setLookAtMatrix(glm::mat4& inMat)
 {
-  m_look_at_matrix  = inMat;
-  glm::mat4 inv = glm::inverse(inMat);
-  m_position.x      = inv[0][3];
-  m_position.y      = inv[1][3];
-  m_position.z      = inv[2][3];
+  m_look_at_matrix = inMat;
+  glm::mat4 inv    = glm::inverse(inMat);
+  m_position.x     = inv[0][3];
+  m_position.y     = inv[1][3];
+  m_position.z     = inv[2][3];
 
   m_use_look_at = true;
 }

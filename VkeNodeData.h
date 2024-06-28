@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
-
-#ifndef __H_VKE_NODE_DATA_
-#define __H_VKE_NODE_DATA_
 
 #pragma once
 
 #include "Node.h"
 #include "VkeBuffer.h"
 #include "VkeMesh.h"
-#include "WMath.h"
 #include <algorithm>
 #include <map>
 
-
-typedef struct _VkeNodeUniform
+struct VkeNodeUniform
 {
-  glm::mat4  view_matrix;
-  glm::mat4  normal_matrix;
+  glm::mat4  node_matrix;
+  glm::mat4  inverse_node_matrix;
   glm::ivec4 lookup;
-  glm::vec4  p1[3];
-} VkeNodeUniform;
+  glm::vec4  padding[3];
+};
 
 
 class VkeNodeData : public VkeBuffer<VkeNodeUniform>
@@ -113,6 +108,3 @@ public:
 
   bool m_needs_buffer_update;
 };
-
-
-#endif

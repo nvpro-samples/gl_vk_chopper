@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -58,10 +58,10 @@ void VkeMesh::initFromMesh(Mesh* const inMesh)
   m_index_count  = inMesh->getIndexCount();
   m_material_id  = inMesh->getMaterialID();
 
-  Vec4f*    nmls = inMesh->getNormals();
-  Vec4f*    vtxs = inMesh->getVertices();
-  uint32_t* idxs = inMesh->getIndices();
-  Vec2f*    uvs  = inMesh->getUVs();
+  glm::vec4* nmls = inMesh->getNormals();
+  glm::vec4* vtxs = inMesh->getVertices();
+  uint32_t*  idxs = inMesh->getIndices();
+  glm::vec2* uvs  = inMesh->getUVs();
 
   size_t dataSize = m_vertex_count * sizeof(VertexObject);
 
@@ -72,16 +72,16 @@ void VkeMesh::initFromMesh(Mesh* const inMesh)
   uint32_t cmpCount = 0;
   for(uint32_t i = 0; i < m_vertex_count; ++i)
   {
-    vData[cmpCount++] = vtxs[i].m_data[0];
-    vData[cmpCount++] = vtxs[i].m_data[1];
-    vData[cmpCount++] = vtxs[i].m_data[2];
-    vData[cmpCount++] = vtxs[i].m_data[3];
-    vData[cmpCount++] = nmls[i].m_data[0];
-    vData[cmpCount++] = nmls[i].m_data[1];
-    vData[cmpCount++] = nmls[i].m_data[2];
-    vData[cmpCount++] = nmls[i].m_data[3];
-    vData[cmpCount++] = uvs[i].m_data[0];
-    vData[cmpCount++] = uvs[i].m_data[1];
+    vData[cmpCount++] = vtxs[i][0];
+    vData[cmpCount++] = vtxs[i][1];
+    vData[cmpCount++] = vtxs[i][2];
+    vData[cmpCount++] = vtxs[i][3];
+    vData[cmpCount++] = nmls[i][0];
+    vData[cmpCount++] = nmls[i][1];
+    vData[cmpCount++] = nmls[i][2];
+    vData[cmpCount++] = nmls[i][3];
+    vData[cmpCount++] = uvs[i][0];
+    vData[cmpCount++] = uvs[i][1];
   }
 
   dataSize = m_index_count * sizeof(uint32_t);
@@ -157,7 +157,6 @@ void VkeMesh::initDrawCommand(VkCommandBuffer* inCommand)
   testCmd.vertexOffset  = firstVert;
 
   vkCmdDrawIndexed(*inCommand, m_index_count, 1, firstVert, firstIdx, 0);
-  //vkCmdDrawIndexedIndirect(*inCommand,)
 }
 
 void VkeMesh::initDrawCommand(VkCommandBuffer* inCommand, VkBuffer& inIndirectBuffer, uint32_t inIndex)

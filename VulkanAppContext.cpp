@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -59,7 +59,7 @@ VulkanAppContext* VulkanAppContext::GetInstance()
 
 VulkanAppContext::VulkanAppContext() {}
 
-void VulkanAppContext::loadVKSScene(std::string& inFileName)
+void VulkanAppContext::loadVKSScene(const std::string& inFileName)
 {
   VKSFile vkFile;
   vkFile.outputFile = inFileName;
@@ -248,9 +248,7 @@ void VulkanAppContext::initRenderer()
 
   m_scene_graph = rctxt->newScene(DEFAULT_SCENE_ID);
 
-  std::string sceneFile = "chopper_pack32.vks";
-
-  loadVKSScene(sceneFile);
+  loadVKSScene("chopper_pack32.vks");
 
 
   ((RENDERER*)m_renderer)->setNodeData(&m_node_data);
@@ -354,6 +352,7 @@ void VulkanAppContext::initAppContext()
   layers. Note that this sample currently crashes when validation is on, but
   this can be useful for development. */
 #if 0 && !defined(NDEBUG)
+  nvprintSetBreakpoints(true, LOGBITS_WARNINGS);
   enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
   enabledExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif

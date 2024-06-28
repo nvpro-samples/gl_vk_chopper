@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2021 NVIDIA CORPORATION
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024 NVIDIA CORPORATION
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /* Contact chebert@nvidia.com (Chris Hebert) for feedback */
 
-#ifndef __H_VKA_UTILS_
-#define __H_VKA_UTILS_
+#pragma once
 
 #include "nvh/nvprint.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <stdint.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
-#include "glm/gtc/matrix_transform.hpp"
 
 #define VKA_CHECK_ERROR(func, msg)                                                                                     \
   {                                                                                                                    \
@@ -42,9 +42,9 @@ void dumpGlobalLayerNames(VkLayerProperties* pros, uint32_t count);
 
 struct Projection
 {
-  float         nearplane;
-  float         farplane;
-  float         fov;
+  float     nearplane;
+  float     farplane;
+  float     fov;
   glm::mat4 matrix;
 
   glm::mat4 proj;
@@ -75,9 +75,9 @@ struct Projection
 
 struct ShadowProjection
 {
-  float         nearplane;
-  float         farplane;
-  float         fov;
+  float     nearplane;
+  float     farplane;
+  float     fov;
   glm::mat4 matrix;
 
   ShadowProjection()
@@ -202,22 +202,3 @@ typedef struct _MeshObject
   uint32_t   indexCount;
   uint32_t   vertexCount;
 } MeshObject;
-
-#endif
-
-#ifndef ICD_SPV_H
-#define ICD_SPV_H
-
-#include <stdint.h>
-
-#define ICD_SPV_MAGIC 0x07230203
-#define ICD_SPV_VERSION 99
-
-struct icd_spv_header
-{
-  uint32_t magic;
-  uint32_t version;
-  uint32_t gen_magic;  // Generator's magic number
-};
-
-#endif /* ICD_SPV_H */

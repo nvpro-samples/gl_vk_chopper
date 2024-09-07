@@ -27,6 +27,7 @@
 #include "VkeScreenQuad.h"
 #include "VkeTerrainQuad.h"
 
+#include <memory>
 #include <stdint.h>
 
 class VkeCamera;

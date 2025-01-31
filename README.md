@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This sample is from earlier versions of the Vulkan API and we do not recommend it anymore.
+
 # gl_vk_chopper
 
 Simple Vulkan rendering example.

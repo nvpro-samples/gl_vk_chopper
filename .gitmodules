@@ -1,0 +1,4 @@
+[submodule "nvpro_core"]
+	path = nvpro_core
+	url = https://github.com/nvpro-samples/nvpro_core.git
+	branch = master
